@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer } from "recharts";
 import { Plus, Check } from "lucide-react";
+import TestChart from "../Charts/StreakMainChart";
 
-const HabitTracker = () => {
+function Dashboard() {
   const [activeTab, setActiveTab] = useState("This week");
   const [habits] = useState([
     { id: 1, name: "Journaling", icon: "✍️" },
@@ -82,12 +83,19 @@ const HabitTracker = () => {
         </div>
       </div>
 
+      <div>
+        <TestChart></TestChart>
+      </div>
+
       {/* Streak Graph */}
       <div className="mb-8">
         <h2 className="text-xl font-semibold mb-4">Streak</h2>
         <div className="bg-white p-4 rounded-lg shadow h-64">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={chartData}>
+            <LineChart
+              data={chartData}
+              margin={{ top: 10, right: 10, left: 10, bottom: 10 }}
+            >
               <Line
                 type="monotone"
                 dataKey="value"
@@ -128,6 +136,6 @@ const HabitTracker = () => {
       </div>
     </div>
   );
-};
+}
 
-export default HabitTracker;
+export default Dashboard;
