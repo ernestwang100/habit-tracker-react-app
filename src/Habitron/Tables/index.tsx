@@ -1,85 +1,72 @@
 import React, { useState, useEffect } from "react";
+import habitsData from "../database/habits.json";
+import datesData from "../database/dates.json";
 
 const HabitTrackerTable = () => {
-  const habits = [
-    { id: 1, name: "Running", icon: "🏃" },
-    { id: 2, name: "Meditation", icon: "🧘" },
-    { id: 3, name: "8hrs of sleep", icon: "💤" },
-    { id: 4, name: "Journaling", icon: "✍️" },
-  ];
+  const [habits] = useState(habitsData.habits);
+  const [dates, setDates] = useState(datesData.dates);
 
-  // Generate dates for the last 20 days
-  const generateDates = () => {
-    const dates = [];
-    const today = new Date();
+  const calculateStreaks = (updatedDates) => {
+    return updatedDates.map((dateEntry, index) => {
+      // Copy the current date's habit completions
+      const updatedHabitCompletions = dateEntry.habitCompletions.map(
+        (habitCompletion, habitIndex) => {
+          // If this is the first date or the previous date's habit was not completed
+          if (
+            index === 0 ||
+            !updatedDates[index - 1].habitCompletions[habitIndex].completed
+          ) {
+            return {
+              ...habitCompletion,
+              streakDays: habitCompletion.completed ? 1 : 0,
+            };
+          }
 
-    // Special dates
-    dates.push({ date: new Date(), label: "@Today" });
-    dates.push({
-      date: new Date(today.setDate(today.getDate() - 1)),
-      label: "@Yesterday",
-    });
-    dates.push({
-      date: new Date(today.setDate(today.getDate() - 1)),
-      label: "@Monday",
-    });
-    dates.push({
-      date: new Date(today.setDate(today.getDate() - 1)),
-      label: "@Last Sunday",
-    });
-    dates.push({
-      date: new Date(today.setDate(today.getDate() - 1)),
-      label: "@Last Saturday",
-    });
+          // Continue streak if current habit is completed
+          return {
+            ...habitCompletion,
+            streakDays: habitCompletion.completed
+              ? updatedDates[index - 1].habitCompletions[habitIndex]
+                  .streakDays + 1
+              : 0,
+          };
+        }
+      );
 
-    // Add more dates
-    for (let i = 5; i < 20; i++) {
-      const date = new Date(today.setDate(today.getDate() - 1));
-      dates.push({
-        date,
-        label: `@${date.toLocaleDateString("en-US", {
-          month: "long",
-          day: "numeric",
-          year: "numeric",
-        })}`,
-      });
-    }
+      // Check if all habits are completed for this date
+      const allHabitsCompleted = updatedHabitCompletions.every(
+        (habit) => habit.completed
+      );
 
-    return dates;
+      return {
+        ...dateEntry,
+        habitCompletions: updatedHabitCompletions,
+        allHabitsCompleted,
+      };
+    });
   };
 
-  const [dates] = useState(generateDates());
-  const [checkedState, setCheckedState] = useState(
-    new Array(dates.length * habits.length).fill(false)
-  );
-  const [sigmaChecked, setSigmaChecked] = useState(
-    new Array(dates.length).fill(false)
-  );
+  const handleHabitToggle = (dateIndex, habitId) => {
+    const updatedDates = [...dates];
+    const dateEntry = updatedDates[dateIndex];
 
-  const getCheckboxIndex = (dateIndex, habitIndex) => {
-    return dateIndex * habits.length + habitIndex;
-  };
-
-  // Check if all habits are completed for a given date
-  const isRowComplete = (dateIndex) => {
-    return habits.every(
-      (_, habitIndex) => checkedState[getCheckboxIndex(dateIndex, habitIndex)]
+    // Find and toggle the specific habit
+    const habitCompletionIndex = dateEntry.habitCompletions.findIndex(
+      (completion) => completion.habitId === habitId
     );
-  };
 
-  // Update sigma states whenever checkboxes change
-  useEffect(() => {
-    const newSigmaState = dates.map((_, dateIndex) => isRowComplete(dateIndex));
-    setSigmaChecked(newSigmaState);
-  }, [checkedState]);
+    if (habitCompletionIndex !== -1) {
+      const currentCompletion =
+        dateEntry.habitCompletions[habitCompletionIndex];
 
-  const handleCheckboxChange = (dateIndex, habitIndex) => {
-    const index = getCheckboxIndex(dateIndex, habitIndex);
-    setCheckedState((prev) => {
-      const newState = [...prev];
-      newState[index] = !newState[index];
-      return newState;
-    });
+      // Toggle the completed status
+      currentCompletion.completed = !currentCompletion.completed;
+
+      // Recalculate streaks for all dates
+      const updatedDatesWithStreaks = calculateStreaks(updatedDates);
+
+      setDates(updatedDatesWithStreaks);
+    }
   };
 
   return (
@@ -88,7 +75,7 @@ const HabitTrackerTable = () => {
         <thead>
           <tr className="border-b">
             <th className="px-4 py-2 text-left whitespace-nowrap">Σ</th>
-            <th className="px-4 py-2 text-left whitespace-nowrap">Day</th>
+            <th className="px-4 py-2 text-left whitespace-nowrap">Aa Day</th>
             {habits.map((habit) => (
               <th
                 key={habit.id}
@@ -103,31 +90,44 @@ const HabitTrackerTable = () => {
           </tr>
         </thead>
         <tbody>
-          {dates.map((dateInfo, dateIndex) => (
-            <tr key={dateInfo.label} className="border-b hover:bg-gray-50">
+          {dates.map((dateEntry, dateIndex) => (
+            <tr key={dateEntry.label} className="border-b hover:bg-gray-50">
               <td className="px-4 py-2">
                 <input
                   type="checkbox"
-                  checked={sigmaChecked[dateIndex]}
+                  checked={dateEntry.allHabitsCompleted}
                   readOnly
                   className="w-4 h-4 rounded border-gray-300 text-blue-500 focus:ring-blue-500 cursor-not-allowed"
                 />
               </td>
               <td className="px-4 py-2 text-left text-gray-600 whitespace-nowrap">
-                {dateInfo.label}
+                {dateEntry.label}
               </td>
-              {habits.map((habit, habitIndex) => (
-                <td key={`${dateInfo.label}-${habit.id}`} className="px-4 py-2">
-                  <input
-                    type="checkbox"
-                    checked={
-                      checkedState[getCheckboxIndex(dateIndex, habitIndex)]
-                    }
-                    onChange={() => handleCheckboxChange(dateIndex, habitIndex)}
-                    className="w-4 h-4 rounded border-gray-300 text-blue-500 focus:ring-blue-500"
-                  />
-                </td>
-              ))}
+              {habits.map((habit) => {
+                const habitCompletion = dateEntry.habitCompletions.find(
+                  (completion) => completion.habitId === habit.id
+                );
+                return (
+                  <td
+                    key={`${dateEntry.label}-${habit.id}`}
+                    className="px-4 py-2"
+                  >
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={habitCompletion?.completed || false}
+                        onChange={() => handleHabitToggle(dateIndex, habit.id)}
+                        className="w-4 h-4 rounded border-gray-300 text-blue-500 focus:ring-blue-500"
+                      />
+                      {habitCompletion && habitCompletion.streakDays > 0 && (
+                        <span className="text-sm text-blue-500">
+                          {habitCompletion.streakDays}
+                        </span>
+                      )}
+                    </div>
+                  </td>
+                );
+              })}
             </tr>
           ))}
         </tbody>
