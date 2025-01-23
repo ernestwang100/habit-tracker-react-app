@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import habitsData from "../database/habits.json";
 import datesData from "../database/dates.json";
+import { dates, habits } from "../database";
 
 const HabitTrackerTable = () => {
   const [habits] = useState(habitsData.habits);
