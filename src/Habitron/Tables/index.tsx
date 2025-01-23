@@ -88,7 +88,7 @@ const HabitTrackerTable = () => {
         <thead>
           <tr className="border-b">
             <th className="px-4 py-2 text-left whitespace-nowrap">Σ</th>
-            <th className="px-4 py-2 text-left whitespace-nowrap">Aa Day</th>
+            <th className="px-4 py-2 text-left whitespace-nowrap">Day</th>
             {habits.map((habit) => (
               <th
                 key={habit.id}
