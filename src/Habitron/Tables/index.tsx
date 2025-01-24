@@ -1,28 +1,10 @@
 import React, { useState } from "react";
-import db from "../database";
-
-// Helper Component for Habit Toggle Input
-const HabitToggle = ({ checked, onChange, streakDays }) => (
-  <div className="flex items-center gap-2">
-    <input
-      type="checkbox"
-      checked={checked}
-      onChange={onChange}
-      className="w-4 h-4 rounded border-gray-300 text-blue-500 focus:ring-blue-500"
-      aria-label="Toggle habit completion"
-    />
-    {streakDays > 0 && (
-      <span className="text-sm text-blue-500">{streakDays}</span>
-    )}
-  </div>
-);
+import db from "../database"; // Initially loads data
+import HabitToggle from "./HabitToggle"; // Assuming HabitToggle is in a separate file
 
 function HabitTrackerTable() {
   const [habits] = useState(db.habits);
   const [dates, setDates] = useState(db.dates);
-
-  console.log(habits);
-  console.log(dates);
 
   const calculateStreaks = (updatedDates) => {
     return updatedDates.map((dateEntry, index) => {
@@ -59,7 +41,7 @@ function HabitTrackerTable() {
     });
   };
 
-  const handleHabitToggle = (dateIndex, habitId) => {
+  const handleHabitToggle = (dateIndex: number, habitId: number) => {
     const updatedDates = [...dates];
     const dateEntry = updatedDates[dateIndex];
 
@@ -75,11 +57,61 @@ function HabitTrackerTable() {
 
       const updatedDatesWithStreaks = calculateStreaks(updatedDates);
       setDates(updatedDatesWithStreaks);
+
+      // Send PUT request to update the JSON file in the backend
+      fetch("/api/dates", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updatedDatesWithStreaks),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          console.log("Data updated successfully:", data);
+        })
+        .catch((error) => {
+          console.error("Error updating data:", error);
+        });
+    }
+  };
+
+  // Add new date row
+  const handleAddNewRow = () => {
+    const newDateEntry = {
+      date: new Date().toLocaleDateString(), // You can format this as needed
+      habitCompletions: habits.map((habit) => ({
+        habitId: habit.id,
+        completed: false,
+        streakDays: 0,
+      })),
+      allHabitsCompleted: false,
+    };
+
+    setDates([...dates, newDateEntry]);
+  };
+
+  // Handle double-click on date to modify it
+  const handleDateDoubleClick = (dateIndex: number) => {
+    const updatedDates = [...dates];
+    const dateEntry = updatedDates[dateIndex];
+
+    // Toggle the date entry to an editable state
+    const updatedDate = prompt("Edit the date:", dateEntry.date);
+    if (updatedDate) {
+      dateEntry.date = updatedDate;
+      setDates(updatedDates);
     }
   };
 
   return (
     <div className="max-w-4xl overflow-x-auto">
+      <button
+        onClick={handleAddNewRow}
+        className="mb-4 px-4 py-2 bg-blue-500 text-white rounded"
+      >
+        Add New Date
+      </button>
       <table className="w-full min-w-max table-auto">
         <thead>
           <tr className="border-b">
@@ -110,7 +142,10 @@ function HabitTrackerTable() {
                   aria-label={`All habits completed for ${dateEntry.date}`}
                 />
               </td>
-              <td className="px-4 py-2 text-left text-gray-600 whitespace-nowrap">
+              <td
+                onDoubleClick={() => handleDateDoubleClick(dateIndex)} // Handle double-click to edit
+                className="px-4 py-2 text-left text-gray-600 whitespace-nowrap cursor-pointer"
+              >
                 {dateEntry.date}
               </td>
               {habits.map((habit) => {
@@ -124,7 +159,7 @@ function HabitTrackerTable() {
                   >
                     <HabitToggle
                       checked={habitCompletion?.completed || false}
-                      onChange={() => handleHabitToggle(dateIndex, habit.id)}
+                      onChange={(e) => handleHabitToggle(dateIndex, habit.id)}
                       streakDays={habitCompletion?.streakDays || 0}
                     />
                   </td>
