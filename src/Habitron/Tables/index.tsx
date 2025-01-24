@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import HabitToggle from "./HabitToggle"; // Assuming it's in the same directory
 import db from "../database"; // The initial habit and date data
+import { Trash2 } from "lucide-react"; // Import a delete icon from Lucide
 
 function HabitTrackerTable() {
   const [habits] = useState(db.habits);
@@ -8,7 +9,6 @@ function HabitTrackerTable() {
   const [editingDate, setEditingDate] = useState<string | null>(null);
   const [editedDate, setEditedDate] = useState<string>("");
 
-  // Close the date edit if clicked outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
@@ -99,6 +99,11 @@ function HabitTrackerTable() {
     setEditingDate(null); // Exit the editing state without saving
   };
 
+  const handleDeleteRow = (dateIndex: number) => {
+    const updatedDates = dates.filter((_, index) => index !== dateIndex);
+    setDates(updatedDates);
+  };
+
   return (
     <div className="max-w-4xl overflow-x-auto">
       <button
@@ -134,6 +139,7 @@ function HabitTrackerTable() {
                 </div>
               </th>
             ))}
+            <th className="px-4 py-2 text-left whitespace-nowrap">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -186,6 +192,14 @@ function HabitTrackerTable() {
                   </td>
                 );
               })}
+              <td className="px-4 py-2 text-left">
+                <button
+                  onClick={() => handleDeleteRow(dateIndex)}
+                  className="text-red-500 hover:text-red-700"
+                >
+                  <Trash2 size={18} />
+                </button>
+              </td>
             </tr>
           ))}
         </tbody>
