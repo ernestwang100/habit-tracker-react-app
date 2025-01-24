@@ -1,10 +1,27 @@
-import React, { useState } from "react";
-import db from "../database"; // Initially loads data
-import HabitToggle from "./HabitToggle"; // Assuming HabitToggle is in a separate file
+import React, { useState, useEffect } from "react";
+import HabitToggle from "./HabitToggle"; // Assuming it's in the same directory
+import db from "../database"; // The initial habit and date data
 
 function HabitTrackerTable() {
   const [habits] = useState(db.habits);
   const [dates, setDates] = useState(db.dates);
+  const [editingDate, setEditingDate] = useState<string | null>(null);
+  const [editedDate, setEditedDate] = useState<string>("");
+
+  // Close the date edit if clicked outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (target && !target.closest(".date-column-edit")) {
+        setEditingDate(null);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const calculateStreaks = (updatedDates) => {
     return updatedDates.map((dateEntry, index) => {
@@ -57,57 +74,46 @@ function HabitTrackerTable() {
 
       const updatedDatesWithStreaks = calculateStreaks(updatedDates);
       setDates(updatedDatesWithStreaks);
-
-      // Send PUT request to update the JSON file in the backend
-      fetch("/api/dates", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(updatedDatesWithStreaks),
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          console.log("Data updated successfully:", data);
-        })
-        .catch((error) => {
-          console.error("Error updating data:", error);
-        });
     }
   };
 
-  // Add new date row
-  const handleAddNewRow = () => {
-    const newDateEntry = {
-      date: new Date().toLocaleDateString(), // You can format this as needed
-      habitCompletions: habits.map((habit) => ({
-        habitId: habit.id,
-        completed: false,
-        streakDays: 0,
-      })),
-      allHabitsCompleted: false,
-    };
-
-    setDates([...dates, newDateEntry]);
+  const handleDoubleClick = (date: string) => {
+    setEditingDate(date);
+    setEditedDate(date); // Initialize with the current date value
   };
 
-  // Handle double-click on date to modify it
-  const handleDateDoubleClick = (dateIndex: number) => {
+  const handleSaveDate = (dateIndex: number) => {
     const updatedDates = [...dates];
     const dateEntry = updatedDates[dateIndex];
 
-    // Toggle the date entry to an editable state
-    const updatedDate = prompt("Edit the date:", dateEntry.date);
-    if (updatedDate) {
-      dateEntry.date = updatedDate;
-      setDates(updatedDates);
+    // Update the date only if it's different
+    if (editedDate !== dateEntry.date) {
+      dateEntry.date = editedDate;
+      const updatedDatesWithStreaks = calculateStreaks(updatedDates);
+      setDates(updatedDatesWithStreaks);
     }
+    setEditingDate(null); // Exit the editing state
+  };
+
+  const handleCancelEdit = () => {
+    setEditingDate(null); // Exit the editing state without saving
   };
 
   return (
     <div className="max-w-4xl overflow-x-auto">
       <button
-        onClick={handleAddNewRow}
+        onClick={() => {
+          const newDateEntry = {
+            date: new Date().toLocaleDateString(),
+            habitCompletions: habits.map((habit) => ({
+              habitId: habit.id,
+              completed: false,
+              streakDays: 0,
+            })),
+            allHabitsCompleted: false,
+          };
+          setDates([...dates, newDateEntry]);
+        }}
         className="mb-4 px-4 py-2 bg-blue-500 text-white rounded"
       >
         Add New Date
@@ -139,14 +145,29 @@ function HabitTrackerTable() {
                   checked={dateEntry.allHabitsCompleted}
                   readOnly
                   className="w-4 h-4 rounded border-gray-300 text-blue-500 focus:ring-blue-500 cursor-not-allowed"
-                  aria-label={`All habits completed for ${dateEntry.date}`}
                 />
               </td>
               <td
-                onDoubleClick={() => handleDateDoubleClick(dateIndex)} // Handle double-click to edit
-                className="px-4 py-2 text-left text-gray-600 whitespace-nowrap cursor-pointer"
+                className="px-4 py-2 text-left text-gray-600 whitespace-nowrap"
+                onDoubleClick={() => handleDoubleClick(dateEntry.date)}
               >
-                {dateEntry.date}
+                {editingDate === dateEntry.date ? (
+                  <div className="flex items-center gap-2 date-column-edit">
+                    <input
+                      type="text"
+                      value={editedDate}
+                      onChange={(e) => setEditedDate(e.target.value)}
+                      className="border p-1 rounded w-24"
+                      onBlur={() => handleSaveDate(dateIndex)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") handleSaveDate(dateIndex);
+                        if (e.key === "Escape") handleCancelEdit();
+                      }}
+                    />
+                  </div>
+                ) : (
+                  dateEntry.date
+                )}
               </td>
               {habits.map((habit) => {
                 const habitCompletion = dateEntry.habitCompletions.find(
@@ -159,7 +180,7 @@ function HabitTrackerTable() {
                   >
                     <HabitToggle
                       checked={habitCompletion?.completed || false}
-                      onChange={(e) => handleHabitToggle(dateIndex, habit.id)}
+                      onChange={() => handleHabitToggle(dateIndex, habit.id)}
                       streakDays={habitCompletion?.streakDays || 0}
                     />
                   </td>
