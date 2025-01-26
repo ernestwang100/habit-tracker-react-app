@@ -1,128 +1,35 @@
-import React, { useState, useEffect } from "react";
-import HabitToggle from "./HabitToggle"; // Assuming it's in the same directory
-import db from "../database"; // The initial habit and date data
-import { Trash2 } from "lucide-react"; // Import a delete icon from Lucide
-import { nanoid } from "nanoid"; // Use nanoid to generate unique IDs
+import React from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { RootState } from "../redux/store";
+import {
+  toggleHabitCompletion,
+  deleteRow,
+  addNewDate,
+  editDate,
+} from "../redux/slices/datesSlice";
+import { Trash2 } from "lucide-react";
 
 function HabitTrackerTable() {
-  const [habits] = useState(db.habits);
-  const [dates, setDates] = useState(
-    db.dates.map((entry) => ({ ...entry, id: nanoid() })) // Add unique `id` to each entry
-  );
-  const [editingDate, setEditingDate] = useState<string | null>(null);
-  const [editedDate, setEditedDate] = useState<string>("");
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as HTMLElement;
-      if (target && !target.closest(".date-column-edit")) {
-        setEditingDate(null);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
-
-  const calculateStreaks = (updatedDates) => {
-    return updatedDates.map((dateEntry, index) => {
-      const updatedHabitCompletions = dateEntry.habitCompletions.map(
-        (habitCompletion, habitIndex) => {
-          if (
-            index === 0 ||
-            !updatedDates[index - 1].habitCompletions[habitIndex].completed
-          ) {
-            return {
-              ...habitCompletion,
-              streakDays: habitCompletion.completed ? 1 : 0,
-            };
-          }
-          return {
-            ...habitCompletion,
-            streakDays: habitCompletion.completed
-              ? updatedDates[index - 1].habitCompletions[habitIndex]
-                  .streakDays + 1
-              : 0,
-          };
-        }
-      );
-
-      const allHabitsCompleted = updatedHabitCompletions.every(
-        (habit) => habit.completed
-      );
-
-      return {
-        ...dateEntry,
-        habitCompletions: updatedHabitCompletions,
-        allHabitsCompleted,
-      };
-    });
-  };
+  const dispatch = useDispatch();
+  const habits = useSelector((state: RootState) => state.habits);
+  const dates = useSelector((state: RootState) => state.dates);
 
   const handleHabitToggle = (dateIndex: number, habitId: number) => {
-    const updatedDates = [...dates];
-    const dateEntry = updatedDates[dateIndex];
-
-    const habitCompletionIndex = dateEntry.habitCompletions.findIndex(
-      (completion) => completion.habitId === habitId
-    );
-
-    if (habitCompletionIndex !== -1) {
-      const currentCompletion =
-        dateEntry.habitCompletions[habitCompletionIndex];
-
-      currentCompletion.completed = !currentCompletion.completed;
-
-      const updatedDatesWithStreaks = calculateStreaks(updatedDates);
-      setDates(updatedDatesWithStreaks);
-    }
+    dispatch(toggleHabitCompletion({ dateIndex, habitId }));
   };
 
-  const handleDoubleClick = (dateId: string) => {
-    setEditingDate(dateId);
-    const dateEntry = dates.find((entry) => entry.id === dateId);
-    if (dateEntry) setEditedDate(dateEntry.date); // Initialize with the current date value
+  const handleDeleteRow = (index: number) => {
+    dispatch(deleteRow(index));
   };
 
-  const handleSaveDate = (dateId: string) => {
-    const updatedDates = [...dates];
-    const dateEntry = updatedDates.find((entry) => entry.id === dateId);
-
-    if (dateEntry && editedDate !== dateEntry.date) {
-      dateEntry.date = editedDate;
-      const updatedDatesWithStreaks = calculateStreaks(updatedDates);
-      setDates(updatedDatesWithStreaks);
-    }
-    setEditingDate(null); // Exit the editing state
-  };
-
-  const handleCancelEdit = () => {
-    setEditingDate(null); // Exit the editing state without saving
-  };
-
-  const handleDeleteRow = (dateId: string) => {
-    const updatedDates = dates.filter((entry) => entry.id !== dateId);
-    setDates(updatedDates);
+  const handleAddNewDate = () => {
+    dispatch(addNewDate());
   };
 
   return (
     <div className="max-w-4xl overflow-x-auto">
       <button
-        onClick={() => {
-          const newDateEntry = {
-            id: nanoid(), // Generate a unique ID for the new date entry
-            date: new Date().toLocaleDateString(),
-            habitCompletions: habits.map((habit) => ({
-              habitId: habit.id,
-              completed: false,
-              streakDays: 0,
-            })),
-            allHabitsCompleted: false,
-          };
-          setDates([...dates, newDateEntry]);
-        }}
+        onClick={handleAddNewDate}
         className="mb-4 px-4 py-2 bg-blue-500 text-white rounded"
       >
         Add New Date
@@ -130,74 +37,45 @@ function HabitTrackerTable() {
       <table className="w-full min-w-max table-auto">
         <thead>
           <tr className="border-b">
-            <th className="px-4 py-2 text-left whitespace-nowrap">Σ</th>
-            <th className="px-4 py-2 text-left whitespace-nowrap">Day</th>
+            <th className="px-4 py-2">Σ</th>
+            <th className="px-4 py-2">Day</th>
             {habits.map((habit) => (
-              <th
-                key={habit.id}
-                className="px-4 py-2 text-left whitespace-nowrap"
-              >
-                <div className="flex items-center gap-2">
-                  <span>{habit.icon}</span>
-                  <span>{habit.name}</span>
-                </div>
+              <th key={habit.id} className="px-4 py-2">
+                {habit.name}
+                {habit.icon}
               </th>
             ))}
-            <th className="px-4 py-2 text-left whitespace-nowrap">Actions</th>
+            <th className="px-4 py-2">Actions</th>
           </tr>
         </thead>
         <tbody>
-          {dates.map((dateEntry) => (
-            <tr key={dateEntry.id} className="border-b hover:bg-gray-50">
-              <td className="px-4 py-2">
+          {dates.map((dateEntry, dateIndex) => (
+            <tr key={dateIndex} className="border-b">
+              <td>
                 <input
                   type="checkbox"
                   checked={dateEntry.allHabitsCompleted}
                   readOnly
-                  className="w-4 h-4 rounded border-gray-300 text-blue-500 focus:ring-blue-500 cursor-not-allowed"
                 />
               </td>
-              <td
-                className="px-4 py-2 text-left text-gray-600 whitespace-nowrap"
-                onDoubleClick={() => handleDoubleClick(dateEntry.id)}
-              >
-                {editingDate === dateEntry.id ? (
-                  <div className="flex items-center gap-2 date-column-edit">
-                    <input
-                      type="text"
-                      value={editedDate}
-                      onChange={(e) => setEditedDate(e.target.value)}
-                      className="border p-1 rounded w-24"
-                      onBlur={() => handleSaveDate(dateEntry.id)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") handleSaveDate(dateEntry.id);
-                        if (e.key === "Escape") handleCancelEdit();
-                      }}
-                    />
-                  </div>
-                ) : (
-                  dateEntry.date
-                )}
-              </td>
+              <td>{dateEntry.date}</td>
               {habits.map((habit) => {
-                const habitCompletion = dateEntry.habitCompletions.find(
-                  (completion) => completion.habitId === habit.id
+                const completion = dateEntry.habitCompletions.find(
+                  (comp) => comp.habitId === habit.id
                 );
                 return (
-                  <td key={`${dateEntry.id}-${habit.id}`} className="px-4 py-2">
-                    <HabitToggle
-                      checked={habitCompletion?.completed || false}
-                      onChange={() =>
-                        handleHabitToggle(dates.indexOf(dateEntry), habit.id)
-                      }
-                      streakDays={habitCompletion?.streakDays || 0}
+                  <td key={habit.id}>
+                    <input
+                      type="checkbox"
+                      checked={completion?.completed || false}
+                      onChange={() => handleHabitToggle(dateIndex, habit.id)}
                     />
                   </td>
                 );
               })}
-              <td className="px-4 py-2 text-left">
+              <td>
                 <button
-                  onClick={() => handleDeleteRow(dateEntry.id)}
+                  onClick={() => handleDeleteRow(dateIndex)}
                   className="text-red-500 hover:text-red-700"
                 >
                   <Trash2 size={18} />
