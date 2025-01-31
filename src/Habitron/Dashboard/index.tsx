@@ -3,6 +3,7 @@ import { LineChart, Line, XAxis, YAxis, ResponsiveContainer } from "recharts";
 import { Plus } from "lucide-react";
 import TestChart from "../Charts/StreakMainChart";
 import HabitTrackerTable from "../Tables";
+import HabitList from "../HabitList";
 
 function Dashboard() {
   const [activeTab, setActiveTab] = useState("This week");
@@ -71,7 +72,7 @@ function Dashboard() {
                     </div>
                   ))}
                 </div>
-
+                <HabitList></HabitList>
                 {/* New Page Button */}
                 <div className="flex items-center justify-center">
                   <button className="flex items-center gap-2 text-gray-400 hover:text-gray-600">

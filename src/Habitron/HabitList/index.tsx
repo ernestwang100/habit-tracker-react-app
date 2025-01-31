@@ -1,0 +1,119 @@
+// HabitList.tsx
+import React, { useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { RootState, AppDispatch } from "../redux/store";
+import {
+  Habit,
+  HabitsState,
+  fetchHabits,
+  addHabit,
+  updateHabit,
+  deleteHabit,
+  setCurrentHabit,
+  clearError,
+} from "../redux/slices/habitsSlice";
+
+export const useAppDispatch = () => useDispatch<AppDispatch>();
+
+function HabitList() {
+  const dispatch = useAppDispatch();
+  const { habits, currentHabit, status, error } = useSelector(
+    (state: RootState) => state.habits
+  );
+
+  useEffect(() => {
+    if (status === "idle") {
+      dispatch(fetchHabits());
+    }
+  }, [status, dispatch]);
+
+  const handleAdd = () => {
+    dispatch(addHabit({ name: "New Habit", icon: "⭐" }));
+  };
+
+  const handleUpdate = () => {
+    if (currentHabit) {
+      dispatch(updateHabit(currentHabit));
+    }
+  };
+
+  const handleDelete = (id: number) => {
+    dispatch(deleteHabit(id));
+  };
+
+  const handleEditClick = (habit: Habit) => {
+    dispatch(setCurrentHabit(habit));
+  };
+
+  if (status === "loading") {
+    return <div className="loading-spinner">Loading...</div>;
+  }
+
+  return (
+    <div className="habits-container">
+      {error && (
+        <div className="error-message">
+          {error}
+          <button onClick={() => dispatch(clearError())}>Dismiss</button>
+        </div>
+      )}
+
+      <div className="habits-header">
+        <h2>My Habits</h2>
+        <button
+          className="add-button"
+          onClick={handleAdd}
+          disabled={status === "loading"}
+        >
+          Add Habit
+        </button>
+      </div>
+
+      {currentHabit && (
+        <div className="edit-form">
+          <input
+            value={currentHabit.name}
+            onChange={(e) =>
+              dispatch(
+                setCurrentHabit({
+                  ...currentHabit,
+                  name: e.target.value,
+                })
+              )
+            }
+          />
+          <input
+            value={currentHabit.icon}
+            onChange={(e) =>
+              dispatch(
+                setCurrentHabit({
+                  ...currentHabit,
+                  icon: e.target.value,
+                })
+              )
+            }
+          />
+          <button onClick={handleUpdate}>Save</button>
+          <button onClick={() => dispatch(setCurrentHabit(null))}>
+            Cancel
+          </button>
+        </div>
+      )}
+
+      <ul className="habits-list">
+        {habits.map((habit) => (
+          <li key={habit.id} className="habit-item">
+            <span className="habit-icon">{habit.icon}</span>
+            <span className="habit-name">{habit.name}</span>
+            <div className="habit-actions">
+              <button onClick={() => handleEditClick(habit)}>Edit</button>
+              <button onClick={() => handleDelete(habit.id)}>Delete</button>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+export default HabitList;
