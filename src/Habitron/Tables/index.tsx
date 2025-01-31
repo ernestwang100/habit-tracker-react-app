@@ -1,35 +1,40 @@
-import React from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { RootState } from "../redux/store";
+import React, { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch } from "../redux/store";
 import {
-  toggleHabitCompletion,
-  deleteRow,
+  fetchLogs,
   addNewDate,
-  editDate,
+  deleteDate,
+  toggleHabitCompletion,
 } from "../redux/slices/datesSlice";
+import { RootState } from "../redux/store";
 import { Trash2 } from "lucide-react";
 
+export const useAppDispatch = () => useDispatch<AppDispatch>();
+
 function HabitTrackerTable() {
-  const dispatch = useDispatch();
-  const habits = useSelector((state: RootState) => state.habits);
+  const dispatch = useAppDispatch();
+  const habits = useSelector((state: RootState) => state.habits.habits);
   const dates = useSelector((state: RootState) => state.dates);
 
-  const handleHabitToggle = (dateIndex: number, habitId: number) => {
-    dispatch(toggleHabitCompletion({ dateIndex, habitId }));
-  };
-
-  const handleDeleteRow = (index: number) => {
-    dispatch(deleteRow(index));
-  };
-
-  const handleAddNewDate = () => {
-    dispatch(addNewDate());
-  };
+  useEffect(() => {
+    dispatch(fetchLogs());
+  }, [dispatch]);
 
   return (
     <div className="max-w-4xl overflow-x-auto">
       <button
-        onClick={handleAddNewDate}
+        onClick={() =>
+          dispatch(
+            addNewDate(
+              habits.map((h) => ({
+                habitId: h.id,
+                completed: false,
+                streakDays: 0,
+              }))
+            )
+          )
+        }
         className="mb-4 px-4 py-2 bg-blue-500 text-white rounded"
       >
         Add New Date
@@ -49,8 +54,8 @@ function HabitTrackerTable() {
           </tr>
         </thead>
         <tbody>
-          {dates.map((dateEntry, dateIndex) => (
-            <tr key={dateIndex} className="border-b">
+          {dates.map((dateEntry, index) => (
+            <tr key={index} className="border-b">
               <td>
                 <input
                   type="checkbox"
@@ -59,26 +64,32 @@ function HabitTrackerTable() {
                 />
               </td>
               <td>{dateEntry.date}</td>
-              {habits.map((habit) => {
-                const completion = dateEntry.habitCompletions.find(
-                  (comp) => comp.habitId === habit.id
-                );
-                return (
-                  <td key={habit.id}>
-                    <input
-                      type="checkbox"
-                      checked={completion?.completed || false}
-                      onChange={() => handleHabitToggle(dateIndex, habit.id)}
-                    />
-                  </td>
-                );
-              })}
+              {habits.map((habit) => (
+                <td key={habit.id}>
+                  <input
+                    type="checkbox"
+                    checked={
+                      !!dateEntry.habitCompletions.find(
+                        (h) => h.habitId === habit.id
+                      )?.completed
+                    }
+                    onChange={() =>
+                      dispatch(
+                        toggleHabitCompletion({
+                          date: dateEntry.date,
+                          habitId: habit.id,
+                        })
+                      )
+                    }
+                  />
+                </td>
+              ))}
               <td>
-                <button
-                  onClick={() => handleDeleteRow(dateIndex)}
-                  className="text-red-500 hover:text-red-700"
-                >
-                  <Trash2 size={18} />
+                <button onClick={() => dispatch(deleteDate(dateEntry.date))}>
+                  <Trash2
+                    size={18}
+                    className="text-red-500 hover:text-red-700"
+                  />
                 </button>
               </td>
             </tr>
