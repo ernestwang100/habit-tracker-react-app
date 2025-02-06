@@ -76,7 +76,7 @@ function HabitTrackerTable() {
                     onChange={() =>
                       dispatch(
                         toggleHabitCompletion({
-                          date: dateEntry.date,
+                          id: dateEntry.id,
                           habitId: habit.id,
                         })
                       )
@@ -85,7 +85,7 @@ function HabitTrackerTable() {
                 </td>
               ))}
               <td>
-                <button onClick={() => dispatch(deleteDate(dateEntry.date))}>
+                <button onClick={() => dispatch(deleteDate(dateEntry.id))}>
                   <Trash2
                     size={18}
                     className="text-red-500 hover:text-red-700"

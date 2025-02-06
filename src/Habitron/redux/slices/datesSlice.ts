@@ -11,6 +11,7 @@ interface HabitCompletion {
 }
 
 interface DateEntry {
+  id: string;
   date: string;
   habitCompletions: HabitCompletion[];
   allHabitsCompleted: boolean;
@@ -46,10 +47,10 @@ export const addNewDate = createAsyncThunk(
 
 export const deleteDate = createAsyncThunk(
   "dates/deleteDate",
-  async (date: string, { rejectWithValue }) => {
+  async (id: string, { rejectWithValue }) => {
     try {
-      await axios.delete(`${API_URL}/${date}`);
-      return date;
+      await axios.delete(`${API_URL}/${id}`);
+      return id;
     } catch (error: any) {
       return rejectWithValue(error.response?.data || "Failed to delete date");
     }
@@ -62,10 +63,10 @@ const datesSlice = createSlice({
   reducers: {
     toggleHabitCompletion: (
       state,
-      action: PayloadAction<{ date: string; habitId: number }>
+      action: PayloadAction<{ id: string; habitId: number }>
     ) => {
-      const { date, habitId } = action.payload;
-      const dateEntry = state.find((entry) => entry.date === date);
+      const { id, habitId } = action.payload;
+      const dateEntry = state.find((entry) => entry.id === id);
       if (dateEntry) {
         const habit = dateEntry.habitCompletions.find(h => h.habitId === habitId);
         if (habit) {
@@ -84,7 +85,7 @@ const datesSlice = createSlice({
         state.push(action.payload);
       })
       .addCase(deleteDate.fulfilled, (state, action) => {
-        return state.filter(entry => entry.date !== action.payload);
+        return state.filter(entry => entry.id !== action.payload);
       });
   }
 });
