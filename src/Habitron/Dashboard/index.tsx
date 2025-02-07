@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer } from "recharts";
 import { Plus } from "lucide-react";
-import TestChart from "../Charts/StreakMainChart";
+import StreakMainChart from "../Charts/StreakMainChart";
 import HabitTrackerTable from "../Tables";
 import HabitList from "../HabitList";
+import { useSelector } from "react-redux";
+import { RootState } from "../redux/store";
 
 function Dashboard() {
   const [activeTab, setActiveTab] = useState("This week");
@@ -27,6 +29,8 @@ function Dashboard() {
     { id: 3, text: "Got 8hrs", icon: "💤" },
     { id: 4, text: "Journaled", icon: "✍️" },
   ];
+
+  const habitLogs = useSelector((state: RootState) => state.habitLogs);
 
   const renderContent = () => {
     switch (activeTab) {
@@ -84,7 +88,7 @@ function Dashboard() {
             </div>
 
             <div>
-              <TestChart></TestChart>
+              <StreakMainChart habitLogs={habitLogs} />
             </div>
 
             {/* Streak Graph */}

@@ -1,16 +1,27 @@
 import React from "react";
-import { LineChart, Line, ResponsiveContainer, XAxis, YAxis } from "recharts";
+import {
+  LineChart,
+  Line,
+  ResponsiveContainer,
+  XAxis,
+  YAxis,
+  Tooltip,
+} from "recharts";
 
-function StreakMainChart() {
-  // Simple test data
-  const data = [
-    { name: "Day 1", value: 10 },
-    { name: "Day 2", value: 20 },
-    { name: "Day 3", value: 15 },
-    { name: "Day 3", value: 15 },
-    { name: "Day 3", value: 15 },
-    { name: "Day 3", value: 15 },
-  ];
+interface HabitLog {
+  date: string;
+  streakDays: number;
+}
+
+interface StreakMainChartProps {
+  habitLogs: HabitLog[];
+}
+function StreakMainChart({ habitLogs }: StreakMainChartProps) {
+  // Transform habitLogs into chart-compatible data
+  const data = habitLogs.map((log, index) => ({
+    name: log.date, // Use the date as the label
+    value: log.streakDays, // Use streakDays for the Y-axis
+  }));
 
   console.log("Rendering chart with data:", data); // Debug log
 
@@ -18,9 +29,10 @@ function StreakMainChart() {
     <div style={{ width: "100%", height: "300px" }}>
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={data}>
-          <Line type="monotone" dataKey="value" stroke="#8884d8" />
           <XAxis dataKey="name" />
           <YAxis />
+          <Tooltip />
+          <Line type="monotone" dataKey="value" stroke="#8884d8" />
         </LineChart>
       </ResponsiveContainer>
     </div>
