@@ -1,32 +1,65 @@
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch } from "../redux/store";
-import {
-  fetchLogs,
-  addNewDate,
-  deleteDate,
-  toggleHabitCompletion,
-} from "../redux/slices/datesSlice";
+import * as habitLogsSlice from "../redux/slices/habitLogsSlice";
 import { RootState } from "../redux/store";
-import { Trash2 } from "lucide-react";
+import { Pen, Trash2 } from "lucide-react";
 
 export const useAppDispatch = () => useDispatch<AppDispatch>();
 
 function HabitTrackerTable() {
   const dispatch = useAppDispatch();
   const habits = useSelector((state: RootState) => state.habits.habits);
-  const dates = useSelector((state: RootState) => state.dates);
+  const dates = useSelector((state: RootState) => state.habitLogs);
 
   useEffect(() => {
-    dispatch(fetchLogs());
+    dispatch(habitLogsSlice.fetchHabitLogs());
   }, [dispatch]);
+
+  const handleDateChange = (dateEntryId: string, newDate: string) => {
+    const updatedHabitCompletions = dates.find(
+      (entry) => entry.id === dateEntryId
+    )?.habitCompletions; // Keep the habit completions the same
+
+    if (updatedHabitCompletions) {
+      dispatch(
+        habitLogsSlice.editHabitLogDate({
+          id: dateEntryId,
+          date: newDate,
+          habitCompletions: updatedHabitCompletions, // Pass the habit completions unchanged
+        })
+      );
+    }
+  };
+
+  const handleHabitCompletionChange = (
+    dateEntryId: string,
+    habitId: number
+  ) => {
+    const updatedHabitCompletions = dates
+      .find((entry) => entry.id === dateEntryId)
+      ?.habitCompletions.map((habit) =>
+        habit.habitId === habitId
+          ? { ...habit, completed: !habit.completed }
+          : habit
+      );
+
+    if (updatedHabitCompletions) {
+      dispatch(
+        habitLogsSlice.updateLog({
+          id: dateEntryId,
+          habitCompletions: updatedHabitCompletions,
+        })
+      );
+    }
+  };
 
   return (
     <div className="max-w-4xl overflow-x-auto">
       <button
         onClick={() =>
           dispatch(
-            addNewDate(
+            habitLogsSlice.addHabitLog(
               habits.map((h) => ({
                 habitId: h.id,
                 completed: false,
@@ -63,29 +96,37 @@ function HabitTrackerTable() {
                   readOnly
                 />
               </td>
-              <td>{dateEntry.date}</td>
+              <td>
+                <input
+                  type="date"
+                  value={dateEntry.date}
+                  onChange={(e) =>
+                    handleDateChange(dateEntry.id, e.target.value)
+                  }
+                />
+              </td>
               {habits.map((habit) => (
                 <td key={habit.id}>
                   <input
                     type="checkbox"
                     checked={
-                      !!dateEntry.habitCompletions.find(
+                      !!dateEntry.habitCompletions?.find(
                         (h) => h.habitId === habit.id
                       )?.completed
                     }
                     onChange={() =>
-                      dispatch(
-                        toggleHabitCompletion({
-                          id: dateEntry.id,
-                          habitId: habit.id,
-                        })
-                      )
+                      handleHabitCompletionChange(dateEntry.id, habit.id)
                     }
                   />
                 </td>
               ))}
+
               <td>
-                <button onClick={() => dispatch(deleteDate(dateEntry.id))}>
+                <button
+                  onClick={() =>
+                    dispatch(habitLogsSlice.deleteHabitLog(dateEntry.id))
+                  }
+                >
                   <Trash2
                     size={18}
                     className="text-red-500 hover:text-red-700"

@@ -1,11 +1,11 @@
 import { configureStore } from "@reduxjs/toolkit";
 import habitsReducer from "./slices/habitsSlice";
-import datesReducer from "./slices/datesSlice";
+import habitLogsReducer from "./slices/habitLogsSlice";
 
 export const store = configureStore({
   reducer: {
     habits: habitsReducer,
-    dates: datesReducer,
+    habitLogs: habitLogsReducer,
   },
 });
 

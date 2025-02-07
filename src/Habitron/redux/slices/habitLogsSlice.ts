@@ -18,8 +18,8 @@ interface DateEntry {
 }
 
 // Async Thunks
-export const fetchLogs = createAsyncThunk(
-  "dates/fetchLogs",
+export const fetchHabitLogs = createAsyncThunk(
+  "habitLogs/fetchHabitLogs",
   async (_, { rejectWithValue }) => {
     try {
       const response = await axios.get(API_URL);
@@ -30,8 +30,8 @@ export const fetchLogs = createAsyncThunk(
   }
 );
 
-export const addNewDate = createAsyncThunk(
-  "dates/addNewDate",
+export const addHabitLog = createAsyncThunk(
+  "habitLogs/addHabitLog",
   async (habitCompletions: HabitCompletion[], { rejectWithValue }) => {
     try {
       const response = await axios.post(API_URL, {
@@ -45,8 +45,33 @@ export const addNewDate = createAsyncThunk(
   }
 );
 
-export const deleteDate = createAsyncThunk(
-  "dates/deleteDate",
+export const updateLog = createAsyncThunk(
+  "habitLogs/updateLog",
+  async ({ id, habitCompletions }: { id: string; habitCompletions: HabitCompletion[] }, { rejectWithValue }) => {
+    try {
+      const response = await axios.put(`${API_URL}/${id}`, { habitCompletions });
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data || "Failed to update log");
+    }
+  }
+);
+
+export const editHabitLogDate = createAsyncThunk(
+  "habitLogs/editHabitLogDate",
+  async ({ id, date, habitCompletions }: { id: string; date: string, habitCompletions: any[] }, { rejectWithValue }) => {
+    try {
+      const response = await axios.put(`${API_URL}/${id}`, { date, habitCompletions });
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data || "Failed to update date");
+    }
+  }
+);
+
+
+export const deleteHabitLog = createAsyncThunk(
+  "habitLogs/deleteHabitLog",
   async (id: string, { rejectWithValue }) => {
     try {
       await axios.delete(`${API_URL}/${id}`);
@@ -57,8 +82,9 @@ export const deleteDate = createAsyncThunk(
   }
 );
 
+
 const datesSlice = createSlice({
-  name: "dates",
+  name: "habitLogs",
   initialState: [] as DateEntry[],
   reducers: {
     toggleHabitCompletion: (
@@ -78,14 +104,28 @@ const datesSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchLogs.fulfilled, (state, action) => {
+      .addCase(fetchHabitLogs.fulfilled, (state, action) => {
         return action.payload;
       })
-      .addCase(addNewDate.fulfilled, (state, action) => {
+      .addCase(addHabitLog.fulfilled, (state, action) => {
         state.push(action.payload);
       })
-      .addCase(deleteDate.fulfilled, (state, action) => {
+      .addCase(deleteHabitLog.fulfilled, (state, action) => {
         return state.filter(entry => entry.id !== action.payload);
+      })
+      .addCase(editHabitLogDate.fulfilled, (state, action) => {
+        const updatedLog = action.payload;
+        const index = state.findIndex((entry) => entry.id === updatedLog.id);
+        if (index !== -1) {
+          state[index] = updatedLog;
+        }
+      })
+      .addCase(updateLog.fulfilled, (state, action) => {
+        const updatedLog = action.payload;
+        const index = state.findIndex((entry) => entry.id === updatedLog.id);
+        if (index !== -1) {
+          state[index] = updatedLog;
+        }
       });
   }
 });
