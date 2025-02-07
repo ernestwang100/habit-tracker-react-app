@@ -32,26 +32,51 @@ function HabitTrackerTable() {
     }
   };
 
-  const handleHabitCompletionChange = (
+  const handleAllHabitsCompletionChange = (
     dateEntryId: string,
-    habitId: number
+    newStatus: boolean
   ) => {
-    const updatedHabitCompletions = habitLogs
-      .find((entry) => entry.id === dateEntryId)
-      ?.habitCompletions.map((habit) =>
-        habit.habitId === habitId
-          ? { ...habit, completed: !habit.completed }
-          : habit
-      );
+    const updatedHabitCompletions =
+      habitLogs
+        .find((entry) => entry.id === dateEntryId)
+        ?.habitCompletions.map((habit) => ({
+          ...habit,
+          completed: newStatus,
+        })) || [];
 
     if (updatedHabitCompletions) {
       dispatch(
         habitLogsSlice.updateLog({
           id: dateEntryId,
           habitCompletions: updatedHabitCompletions,
+          allHabitsCompleted: newStatus, // Save to backend
         })
       );
     }
+  };
+
+  const handleHabitCompletionChange = (
+    dateEntryId: string,
+    habitId: number
+  ) => {
+    const dateEntry = habitLogs.find((entry) => entry.id === dateEntryId);
+    if (!dateEntry) return;
+
+    const updatedHabitCompletions = dateEntry.habitCompletions.map((habit) =>
+      habit.habitId === habitId
+        ? { ...habit, completed: !habit.completed }
+        : habit
+    );
+
+    const allChecked = updatedHabitCompletions.every((h) => h.completed);
+
+    dispatch(
+      habitLogsSlice.updateLog({
+        id: dateEntryId,
+        habitCompletions: updatedHabitCompletions,
+        allHabitsCompleted: allChecked, // Update based on individual checkboxes
+      })
+    );
   };
 
   const sortedHabitLogs = [...habitLogs].sort(
@@ -96,8 +121,13 @@ function HabitTrackerTable() {
               <td>
                 <input
                   type="checkbox"
-                  checked={dateEntry.allHabitsCompleted}
-                  readOnly
+                  checked={Boolean(dateEntry.allHabitsCompleted)}
+                  onChange={() =>
+                    handleAllHabitsCompletionChange(
+                      dateEntry.id,
+                      !dateEntry.allHabitsCompleted
+                    )
+                  }
                 />
               </td>
               <td>
@@ -113,11 +143,11 @@ function HabitTrackerTable() {
                 <td key={habit.id}>
                   <input
                     type="checkbox"
-                    checked={
-                      !!dateEntry.habitCompletions?.find(
+                    checked={Boolean(
+                      dateEntry.habitCompletions?.find(
                         (h) => h.habitId === habit.id
                       )?.completed
-                    }
+                    )}
                     onChange={() =>
                       handleHabitCompletionChange(dateEntry.id, habit.id)
                     }

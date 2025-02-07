@@ -47,9 +47,9 @@ export const addHabitLog = createAsyncThunk(
 
 export const updateLog = createAsyncThunk(
   "habitLogs/updateLog",
-  async ({ id, habitCompletions }: { id: string; habitCompletions: HabitCompletion[] }, { rejectWithValue }) => {
+  async ({ id, habitCompletions, allHabitsCompleted }: { id: string; habitCompletions: HabitCompletion[]; allHabitsCompleted: boolean }, { rejectWithValue }) => {
     try {
-      const response = await axios.put(`${API_URL}/${id}`, { habitCompletions });
+      const response = await axios.put(`${API_URL}/${id}`, { habitCompletions, allHabitsCompleted });
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data || "Failed to update log");
