@@ -10,14 +10,14 @@ export const useAppDispatch = () => useDispatch<AppDispatch>();
 function HabitTrackerTable() {
   const dispatch = useAppDispatch();
   const habits = useSelector((state: RootState) => state.habits.habits);
-  const dates = useSelector((state: RootState) => state.habitLogs);
+  const habitLogs = useSelector((state: RootState) => state.habitLogs);
 
   useEffect(() => {
     dispatch(habitLogsSlice.fetchHabitLogs());
   }, [dispatch]);
 
   const handleDateChange = (dateEntryId: string, newDate: string) => {
-    const updatedHabitCompletions = dates.find(
+    const updatedHabitCompletions = habitLogs.find(
       (entry) => entry.id === dateEntryId
     )?.habitCompletions; // Keep the habit completions the same
 
@@ -36,7 +36,7 @@ function HabitTrackerTable() {
     dateEntryId: string,
     habitId: number
   ) => {
-    const updatedHabitCompletions = dates
+    const updatedHabitCompletions = habitLogs
       .find((entry) => entry.id === dateEntryId)
       ?.habitCompletions.map((habit) =>
         habit.habitId === habitId
@@ -53,6 +53,10 @@ function HabitTrackerTable() {
       );
     }
   };
+
+  const sortedHabitLogs = [...habitLogs].sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+  );
 
   return (
     <div className="max-w-4xl overflow-x-auto">
@@ -87,7 +91,7 @@ function HabitTrackerTable() {
           </tr>
         </thead>
         <tbody>
-          {dates.map((dateEntry, index) => (
+          {sortedHabitLogs.map((dateEntry, index) => (
             <tr key={index} className="border-b">
               <td>
                 <input
