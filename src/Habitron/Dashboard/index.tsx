@@ -30,7 +30,9 @@ function Dashboard() {
     { id: 4, text: "Journaled", icon: "✍️" },
   ];
 
-  const habitLogs = useSelector((state: RootState) => state.habitLogs);
+  const habitLogs = useSelector(
+    (state: RootState) => state.habitLogs.habitLogs
+  );
 
   const renderContent = () => {
     switch (activeTab) {
@@ -47,35 +49,6 @@ function Dashboard() {
             <div className="mb-8">
               <h2 className="text-xl font-semibold mb-4">Habits</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {/* Today's Habits */}
-                <div className="bg-white p-4 rounded-lg shadow">
-                  <h3 className="text-gray-500 mb-4">@Today</h3>
-                  {habits.map((habit) => (
-                    <div
-                      key={habit.id}
-                      className="flex items-center gap-2 mb-3"
-                    >
-                      <input type="checkbox" className="w-4 h-4" />
-                      <span>{habit.icon}</span>
-                      <span>{habit.name}</span>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Yesterday's Habits */}
-                <div className="bg-white p-4 rounded-lg shadow">
-                  <h3 className="text-gray-500 mb-4">@Yesterday</h3>
-                  {habits.map((habit) => (
-                    <div
-                      key={habit.id}
-                      className="flex items-center gap-2 mb-3"
-                    >
-                      <input type="checkbox" className="w-4 h-4" />
-                      <span>{habit.icon}</span>
-                      <span>{habit.name}</span>
-                    </div>
-                  ))}
-                </div>
                 <HabitList></HabitList>
                 {/* New Page Button */}
                 <div className="flex items-center justify-center">
