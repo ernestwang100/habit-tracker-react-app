@@ -4,8 +4,11 @@ import { Plus } from "lucide-react";
 import StreakMainChart from "../Charts/StreakMainChart";
 import HabitTrackerTable from "../Tables";
 import HabitList from "../HabitList";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "../redux/store";
+import { useEffect } from "react";
+import { fetchHabitLogs } from "../redux/slices/habitLogsSlice";
+import { AppDispatch } from "../redux/store"; // ✅ Import the typed dispatch
 
 function Dashboard() {
   const [activeTab, setActiveTab] = useState("This week");
@@ -33,6 +36,12 @@ function Dashboard() {
   const habitLogs = useSelector(
     (state: RootState) => state.habitLogs.habitLogs
   );
+
+  const dispatch: AppDispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(fetchHabitLogs());
+  }, [dispatch]);
 
   const renderContent = () => {
     switch (activeTab) {
