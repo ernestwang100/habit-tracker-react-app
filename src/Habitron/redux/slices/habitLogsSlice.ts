@@ -151,21 +151,27 @@ const habitLogsSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(fetchHabitLogs.fulfilled, (state, action) => {
+        console.log("Fetched habit logs:", action.payload);
         state.habitLogs = action.payload;
       })
       .addCase(addHabitLog.fulfilled, (state, action) => {
+        console.log("Added habit log, new state:", action.payload);
         state.habitLogs = action.payload;
       })
       .addCase(updateLog.fulfilled, (state, action) => {
+        console.log("Updated habit log, new state:", action.payload);
         state.habitLogs = action.payload;
       })
       .addCase(editHabitLogDate.fulfilled, (state, action) => {
+        console.log("Edited log date, new state:", action.payload);
         state.habitLogs = action.payload;
       })
       .addCase(deleteHabitLog.fulfilled, (state, action) => {
+        console.log("Deleted log, new state:", action.payload);
         state.habitLogs = action.payload;
       });
   },
+  
 });
 
 

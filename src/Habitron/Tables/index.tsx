@@ -61,24 +61,36 @@ function HabitTrackerTable() {
     dateEntryId: string,
     habitId: number
   ) => {
-    const dateEntry = habitLogs.find((entry) => entry.id === dateEntryId);
-    if (!dateEntry) return;
+    console.log(`Toggling habit ${habitId} for log ${dateEntryId}`);
 
+    // Find the relevant habit log entry
+    const dateEntry = habitLogs.find((entry) => entry.id === dateEntryId);
+    if (!dateEntry) {
+      console.warn(`No log found for id ${dateEntryId}`);
+      return;
+    }
+
+    // Toggle the specific habit's completion
     const updatedHabitCompletions = dateEntry.habitCompletions.map((habit) =>
       habit.habitId === habitId
         ? { ...habit, completed: !habit.completed }
         : habit
     );
 
+    // Check if all habits are completed after the toggle
     const allChecked = updatedHabitCompletions.every((h) => h.completed);
+    console.log(`All habits completed for log ${dateEntryId}: ${allChecked}`);
 
+    // Dispatch the update action and log the new state after dispatch
     dispatch(
       habitLogsSlice.updateLog({
         id: dateEntryId,
         habitCompletions: updatedHabitCompletions,
-        allHabitsCompleted: allChecked, // Update based on individual checkboxes
+        allHabitsCompleted: allChecked,
       })
-    );
+    ).then(() => {
+      console.log("Update dispatched for log:", dateEntryId);
+    });
   };
 
   const sortedHabitLogs = [...habitLogs].sort(
