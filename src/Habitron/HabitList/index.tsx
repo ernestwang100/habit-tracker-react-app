@@ -12,6 +12,7 @@ import {
   setCurrentHabit,
   clearError,
 } from "../redux/slices/habitsSlice";
+import "./index.css";
 
 export const useAppDispatch = () => useDispatch<AppDispatch>();
 
@@ -103,8 +104,13 @@ function HabitList() {
       <ul className="habits-list">
         {habits.map((habit) => (
           <li key={habit.id} className="habit-item">
-            <span className="habit-icon">{habit.icon}</span>
-            <span className="habit-name">{habit.name}</span>
+            {/* Left side: Icon + Name */}
+            <div className="habit-info">
+              <span className="habit-icon">{habit.icon}</span>
+              <span className="habit-name">{habit.name}</span>
+            </div>
+
+            {/* Right side: Edit & Delete buttons */}
             <div className="habit-actions">
               <button onClick={() => handleEditClick(habit)}>Edit</button>
               <button onClick={() => handleDelete(habit.id)}>Delete</button>

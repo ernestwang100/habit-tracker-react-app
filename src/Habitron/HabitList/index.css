@@ -1,0 +1,23 @@
+.habit-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* ✅ Ensures spacing between name & buttons */
+    padding: 10px;
+    border-bottom: 1px solid #ccc;
+  }
+  
+  .habit-info {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* ✅ Space between icon and name */
+  }
+  
+  .habit-name {
+    white-space: nowrap; /* ✅ Prevents wrapping */
+  }
+  
+  .habit-actions {
+    display: flex;
+    gap: 10px; /* ✅ Adds spacing between buttons */
+  }
+  
