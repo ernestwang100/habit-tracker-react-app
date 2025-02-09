@@ -12,26 +12,6 @@ import { AppDispatch } from "../redux/store"; // ✅ Import the typed dispatch
 
 function Dashboard() {
   const [activeTab, setActiveTab] = useState("This week");
-  const [habits] = useState([
-    { id: 1, name: "Journaling", icon: "✍️" },
-    { id: 2, name: "Running", icon: "🏃" },
-    { id: 3, name: "8hrs of sleep", icon: "💤" },
-    { id: 4, name: "Meditation", icon: "🧘" },
-  ]);
-
-  const chartData = [
-    { date: "January 10, 2025", value: 120 },
-    { date: "January 11, 2025", value: 0 },
-    { date: "January 12, 2025", value: 0 },
-    { date: "January 13, 2025", value: 0 },
-  ];
-
-  const habitButtons = [
-    { id: 1, text: "Ran today", icon: "🏃" },
-    { id: 2, text: "Meditated", icon: "🧘" },
-    { id: 3, text: "Got 8hrs", icon: "💤" },
-    { id: 4, text: "Journaled", icon: "✍️" },
-  ];
 
   const habitLogs = useSelector(
     (state: RootState) => state.habitLogs.habitLogs
@@ -71,54 +51,7 @@ function Dashboard() {
 
             <div>
               <StreakMainChart habitLogs={habitLogs} />
-            </div>
-
-            {/* Streak Graph */}
-            <div className="mb-8">
               <h2 className="text-xl font-semibold mb-4">Streak</h2>
-              <div className="bg-white p-4 rounded-lg shadow h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart
-                    data={chartData}
-                    margin={{ top: 10, right: 10, left: 10, bottom: 10 }}
-                  >
-                    <Line
-                      type="monotone"
-                      dataKey="value"
-                      stroke="#3b82f6"
-                      strokeWidth={2}
-                      dot={false}
-                    />
-                    <XAxis
-                      dataKey="date"
-                      axisLine={false}
-                      tickLine={false}
-                      tick={{ fontSize: 12 }}
-                    />
-                    <YAxis
-                      axisLine={false}
-                      tickLine={false}
-                      tick={{ fontSize: 12 }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-
-            {/* Habit Buttons */}
-            <div className="bg-white p-4 rounded-lg shadow">
-              <h3 className="text-lg font-semibold mb-4">Habit Buttons</h3>
-              <div className="grid grid-cols-2 gap-2">
-                {habitButtons.map((button) => (
-                  <button
-                    key={button.id}
-                    className="flex items-center gap-2 p-2 rounded bg-gray-50 hover:bg-gray-100"
-                  >
-                    <span>{button.icon}</span>
-                    <span>{button.text}</span>
-                  </button>
-                ))}
-              </div>
             </div>
           </>
         );
