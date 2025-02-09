@@ -10,7 +10,9 @@ export const useAppDispatch = () => useDispatch<AppDispatch>();
 function HabitTrackerTable() {
   const dispatch = useAppDispatch();
   const habits = useSelector((state: RootState) => state.habits.habits);
-  const habitLogs = useSelector((state: RootState) => state.habitLogs);
+  const habitLogs = useSelector(
+    (state: RootState) => state.habitLogs.habitLogs
+  );
 
   useEffect(() => {
     dispatch(habitLogsSlice.fetchHabitLogs());
