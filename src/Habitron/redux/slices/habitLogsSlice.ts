@@ -53,19 +53,20 @@ export const addHabitLog = createAsyncThunk(
       const newLog = {
         date: new Date().toISOString().split("T")[0],
         habitCompletions,
-        allHabitsCompleted: false,
+        allHabitsCompleted: habitCompletions.every((h) => h.completed),
         streakDays: 0, // Default before calculation
       };
 
       const response = await axios.post(API_URL, newLog);
-      const updatedLogs = calculateStreaks([...state.habitLogs, response.data]); // 🔹 Recalculate streaks
+      const updatedLogs = calculateStreaks([...state.habitLogs, response.data]);
 
-      return updatedLogs[updatedLogs.length - 1]; // Return the new entry with correct streak
+      return updatedLogs; // 🔹 Return the entire updated state
     } catch (error: any) {
       return rejectWithValue(error.response?.data || "Failed to add date");
     }
   }
 );
+
 
 export const updateLog = createAsyncThunk(
   "habitLogs/updateLog",
@@ -123,34 +124,50 @@ export const deleteHabitLog = createAsyncThunk(
   }
 );
 
+const initialState = {
+  habitLogs: [] as DateEntry[],
+};
+
 const habitLogsSlice = createSlice({
   name: "habitLogs",
-  initialState: [] as DateEntry[],
+  initialState,
   reducers: {
     toggleHabitCompletion: (state, action: PayloadAction<{ id: string; habitId: number }>) => {
-      const { id, habitId } = action.payload;
-      const dateEntry = state.find((entry) => entry.id === id);
-      if (dateEntry) {
-        const habit = dateEntry.habitCompletions.find((h) => h.habitId === habitId);
-        if (habit) {
-          habit.completed = !habit.completed;
-          dateEntry.allHabitsCompleted = dateEntry.habitCompletions.every((h) => h.completed);
-        }
-      }
-      return calculateStreaks(state);
+      state.habitLogs = calculateStreaks(
+        state.habitLogs.map((entry) =>
+          entry.id === action.payload.id
+            ? {
+                ...entry,
+                habitCompletions: entry.habitCompletions.map((h) =>
+                  h.habitId === action.payload.habitId ? { ...h, completed: !h.completed } : h
+                ),
+                allHabitsCompleted: entry.habitCompletions.every((h) => h.completed),
+              }
+            : entry
+        )
+      );
     },
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchHabitLogs.fulfilled, (_, action) => action.payload)
-      .addCase(addHabitLog.fulfilled, (state, action) => {
-        state.push(action.payload); // Add the new DateEntry to the state
+      .addCase(fetchHabitLogs.fulfilled, (state, action) => {
+        state.habitLogs = action.payload;
       })
-            .addCase(updateLog.fulfilled, (_, action) => action.payload)
-      .addCase(editHabitLogDate.fulfilled, (_, action) => action.payload)
-      .addCase(deleteHabitLog.fulfilled, (_, action) => action.payload);
+      .addCase(addHabitLog.fulfilled, (state, action) => {
+        state.habitLogs = action.payload;
+      })
+      .addCase(updateLog.fulfilled, (state, action) => {
+        state.habitLogs = action.payload;
+      })
+      .addCase(editHabitLogDate.fulfilled, (state, action) => {
+        state.habitLogs = action.payload;
+      })
+      .addCase(deleteHabitLog.fulfilled, (state, action) => {
+        state.habitLogs = action.payload;
+      });
   },
 });
+
 
 export const { toggleHabitCompletion } = habitLogsSlice.actions;
 export default habitLogsSlice.reducer;

@@ -1,6 +1,7 @@
 // habitsSlice.ts
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import axios from "axios";
+import { RootState } from "../store"; // Ensure you have a proper RootState
 
 // Types
 export interface Habit {
@@ -9,70 +10,143 @@ export interface Habit {
   icon: string;
 }
 
+export interface HabitCompletion {
+  habitId: number;
+  completed: boolean;
+}
+
+export interface DateEntry {
+  date: string;
+  habitCompletions: HabitCompletion[];
+}
+
 export interface HabitsState {
   habits: Habit[];
   currentHabit: Habit | null;
-  status: 'idle' | 'loading' | 'succeeded' | 'failed';
+  status: "idle" | "loading" | "succeeded" | "failed";
   error: string | null;
 }
 
 // API Configuration
 const API_URL = "http://localhost:4000/api/habits";
+const HABIT_LOGS_URL = "http://localhost:4000/api/habitLogs"; // Habit Logs API
 
-// Async Thunks
+// Fetch all habits
 export const fetchHabits = createAsyncThunk(
-  'habits/fetchHabits',
+  "habits/fetchHabits",
   async (_, { rejectWithValue }) => {
     try {
       const response = await axios.get(API_URL);
       return response.data;
     } catch (error: any) {
-      return rejectWithValue(error.response?.data || 'Failed to fetch habits');
+      return rejectWithValue(error.response?.data || "Failed to fetch habits");
     }
   }
 );
 
+// Add a new habit and update habitLogs to include the new habit
 export const addHabit = createAsyncThunk(
-  'habits/addHabit',
-  async (newHabit: Omit<Habit, "id">, { rejectWithValue }) => {
+  "habits/addHabit",
+  async (newHabit: Omit<Habit, "id">, { getState, dispatch, rejectWithValue }) => {
     try {
+      // Create new habit
       const response = await axios.post(API_URL, newHabit);
-      return response.data;
+      const habit: Habit = response.data;
+
+      // Get current habit logs from Redux
+      const state = getState() as RootState;
+      console.log("🔍 Current Redux State:", state); // Debugging step
+
+      // Ensure `habitLogs` exists and has data
+      const habitLogs = state.habitLogs.habitLogs;  // Adjust this based on your store structure
+
+      if (!Array.isArray(habitLogs)) {
+        console.error("❌ Habit logs is not an array:", habitLogs);
+        return rejectWithValue("Invalid habit logs structure in state");
+      }
+
+      // Update habit logs to include the new habit
+      const updatedLogs = habitLogs.map((log: DateEntry) => ({
+        ...log,
+        habitCompletions: [...log.habitCompletions, { habitId: habit.id, completed: false }]
+      }));
+
+      // Check if the array is still empty before dispatching update
+      if (updatedLogs.length === 0) {
+        console.warn("⚠️ No habit logs found for update!");
+      } else {
+        console.log("📦 Updated Habit Logs:", updatedLogs);
+        await dispatch(updateAllHabitLogs(updatedLogs));
+      }
+
+      return habit;
     } catch (error: any) {
-      return rejectWithValue(error.response?.data || 'Failed to add habit');
+      return rejectWithValue(error.response?.data || "Failed to add habit");
     }
   }
 );
 
+
+// Update an existing habit
 export const updateHabit = createAsyncThunk(
-  'habits/updateHabit',
+  "habits/updateHabit",
   async (updatedHabit: Habit, { rejectWithValue }) => {
     try {
       const response = await axios.put(`${API_URL}/${updatedHabit.id}`, updatedHabit);
       return response.data;
     } catch (error: any) {
-      return rejectWithValue(error.response?.data || 'Failed to update habit');
+      return rejectWithValue(error.response?.data || "Failed to update habit");
     }
   }
 );
 
+// Delete a habit and remove it from habitLogs
 export const deleteHabit = createAsyncThunk(
-  'habits/deleteHabit',
-  async (habitId: number, { rejectWithValue }) => {
+  "habits/deleteHabit",
+  async (habitId: number, { getState, dispatch, rejectWithValue }) => {
     try {
       await axios.delete(`${API_URL}/${habitId}`);
+
+      // Get current habit logs
+      const state = getState() as RootState;
+      const updatedLogs = state.habitLogs.map((log: DateEntry) => ({
+        ...log,
+        habitCompletions: log.habitCompletions.filter(h => h.habitId !== habitId)
+      }));
+
+      // Update habit logs after deletion
+      await dispatch(updateAllHabitLogs(updatedLogs));
       return habitId;
     } catch (error: any) {
-      return rejectWithValue(error.response?.data || 'Failed to delete habit');
+      return rejectWithValue(error.response?.data || "Failed to delete habit");
     }
   }
 );
+
+// Update all habit logs in the backend
+export const updateAllHabitLogs = createAsyncThunk(
+  "habitLogs/updateAllHabitLogs",
+  async (updatedLogs: DateEntry[], { rejectWithValue }) => {
+    console.log("🚀 Dispatching batch update for habit logs"); // Log when it's triggered
+    console.log("📦 Logs to update:", updatedLogs); // Log data before sending
+
+    try {
+      const response = await axios.put(`${HABIT_LOGS_URL}/batchUpdate`, updatedLogs);
+      console.log("✅ Batch update success:", response.data); // Log successful response
+      return updatedLogs;
+    } catch (error: any) {
+      console.error("❌ Failed to update habit logs:", error.response?.data || error); // Log error
+      return rejectWithValue(error.response?.data || "Failed to update logs");
+    }
+  }
+);
+
 
 // Initial State
 const initialState: HabitsState = {
   habits: [],
   currentHabit: null,
-  status: 'idle',
+  status: "idle",
   error: null
 };
 
@@ -92,27 +166,27 @@ const habitsSlice = createSlice({
     builder
       // Fetch Habits
       .addCase(fetchHabits.pending, (state) => {
-        state.status = 'loading';
+        state.status = "loading";
         state.error = null;
       })
       .addCase(fetchHabits.fulfilled, (state, action) => {
-        state.status = 'succeeded';
+        state.status = "succeeded";
         state.habits = action.payload;
       })
       .addCase(fetchHabits.rejected, (state, action) => {
-        state.status = 'failed';
+        state.status = "failed";
         state.error = action.payload as string;
       })
       // Add Habit
       .addCase(addHabit.pending, (state) => {
-        state.status = 'loading';
+        state.status = "loading";
       })
       .addCase(addHabit.fulfilled, (state, action) => {
-        state.status = 'succeeded';
+        state.status = "succeeded";
         state.habits.unshift(action.payload);
       })
       .addCase(addHabit.rejected, (state, action) => {
-        state.status = 'failed';
+        state.status = "failed";
         state.error = action.payload as string;
       })
       // Update Habit
