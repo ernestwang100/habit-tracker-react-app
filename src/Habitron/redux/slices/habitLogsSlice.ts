@@ -49,7 +49,8 @@ export const addHabitLog = createAsyncThunk(
   "habitLogs/addHabitLog",
   async (habitCompletions: HabitCompletion[], { rejectWithValue, getState }) => {
     try {
-      const state = getState() as { habitLogs: DateEntry[] };
+      const state = getState() as { habitLogs: { habitLogs: DateEntry[] } };
+      const logsArray = state.habitLogs.habitLogs; // Extract the actual array
       const newLog = {
         date: new Date().toISOString().split("T")[0],
         habitCompletions,
@@ -58,7 +59,7 @@ export const addHabitLog = createAsyncThunk(
       };
 
       const response = await axios.post(API_URL, newLog);
-      const updatedLogs = calculateStreaks([...state.habitLogs, response.data]);
+      const updatedLogs = calculateStreaks([...logsArray, response.data]);
 
       return updatedLogs; // 🔹 Return the entire updated state
     } catch (error: any) {
@@ -71,20 +72,31 @@ export const addHabitLog = createAsyncThunk(
 export const updateLog = createAsyncThunk(
   "habitLogs/updateLog",
   async ({ id, habitCompletions, allHabitsCompleted }: { id: string; habitCompletions: HabitCompletion[]; allHabitsCompleted: boolean }, { rejectWithValue, getState }) => {
-    try {
-      const state = getState() as { habitLogs: DateEntry[] };
+    console.log("🚀 updateLog called with:", id, habitCompletions, allHabitsCompleted);
 
+    try {
+      const state = getState() as { habitLogs: { habitLogs: DateEntry[] } };
+      const logsArray = state.habitLogs.habitLogs; // Extract the actual array
+
+      console.log("🌟 Extracted habitLogs array:", logsArray);
+
+      if (!Array.isArray(logsArray)) {
+        console.error("❌ Extracted state.habitLogs.habitLogs is not an array:", logsArray);
+        return rejectWithValue("Invalid state: habitLogs.habitLogs is not an array");
+      }
+      
       const response = await axios.put(`${API_URL}/${id}`, {
         habitCompletions,
         allHabitsCompleted,
       });
-
-      const updatedLogs = state.habitLogs.map((log) =>
+      console.log("✅ Response received:", response.data);
+      const updatedLogs = logsArray.map((log) =>
         log.id === id ? { ...log, habitCompletions, allHabitsCompleted } : log
       );
 
       return calculateStreaks(updatedLogs); // 🔹 Recalculate streaks
     } catch (error: any) {
+      console.error("❌ Error updating log:", error.response?.data || error);
       return rejectWithValue(error.response?.data || "Failed to update log");
     }
   }
@@ -94,11 +106,12 @@ export const editHabitLogDate = createAsyncThunk(
   "habitLogs/editHabitLogDate",
   async ({ id, date, habitCompletions }: { id: string; date: string; habitCompletions: any[] }, { rejectWithValue, getState }) => {
     try {
-      const state = getState() as { habitLogs: DateEntry[] };
+      const state = getState() as { habitLogs: { habitLogs: DateEntry[] } };
+      const logsArray = state.habitLogs.habitLogs; // Extract the actual array
 
       const response = await axios.put(`${API_URL}/${id}`, { date, habitCompletions });
 
-      const updatedLogs = state.habitLogs.map((log) =>
+      const updatedLogs = logsArray.map((log) =>
         log.id === id ? { ...log, date, habitCompletions } : log
       );
 
@@ -113,10 +126,12 @@ export const deleteHabitLog = createAsyncThunk(
   "habitLogs/deleteHabitLog",
   async (id: string, { rejectWithValue, getState }) => {
     try {
-      const state = getState() as { habitLogs: DateEntry[] };
+      const state = getState() as { habitLogs: { habitLogs: DateEntry[] } };
+      const logsArray = state.habitLogs.habitLogs; // Extract the actual array
+
       await axios.delete(`${API_URL}/${id}`);
 
-      const updatedLogs = state.habitLogs.filter((entry) => entry.id !== id);
+      const updatedLogs = logsArray.filter((entry) => entry.id !== id);
       return calculateStreaks(updatedLogs);
     } catch (error: any) {
       return rejectWithValue(error.response?.data || "Failed to delete date");
