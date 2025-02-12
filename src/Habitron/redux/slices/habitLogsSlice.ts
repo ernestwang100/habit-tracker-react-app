@@ -1,7 +1,8 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import axios from "axios";
 
-const API_URL = "http://localhost:4000/api/habitlogs";
+const API_BASE = process.env.REACT_APP_API_BASE;
+const HABIT_LOGS_URL = `${API_BASE}/api/habitlogs`;
 
 // Types
 interface HabitCompletion {
@@ -37,7 +38,7 @@ export const fetchHabitLogs = createAsyncThunk(
   "habitLogs/fetchHabitLogs",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get(API_URL);
+      const response = await axios.get(HABIT_LOGS_URL);
       return calculateStreaks(response.data); // 🔹 Ensure streaks are calculated on fetch
     } catch (error: any) {
       return rejectWithValue(error.response?.data || "Failed to fetch logs");
@@ -58,7 +59,7 @@ export const addHabitLog = createAsyncThunk(
         streakDays: 0, // Default before calculation
       };
 
-      const response = await axios.post(API_URL, newLog);
+      const response = await axios.post(HABIT_LOGS_URL, newLog);
       const updatedLogs = calculateStreaks([...logsArray, response.data]);
 
       return updatedLogs; // 🔹 Return the entire updated state
@@ -85,7 +86,7 @@ export const updateLog = createAsyncThunk(
         return rejectWithValue("Invalid state: habitLogs.habitLogs is not an array");
       }
       
-      const response = await axios.put(`${API_URL}/${id}`, {
+      const response = await axios.put(`${HABIT_LOGS_URL}/${id}`, {
         habitCompletions,
         allHabitsCompleted,
       });
@@ -109,7 +110,7 @@ export const editHabitLogDate = createAsyncThunk(
       const state = getState() as { habitLogs: { habitLogs: DateEntry[] } };
       const logsArray = state.habitLogs.habitLogs; // Extract the actual array
 
-      const response = await axios.put(`${API_URL}/${id}`, { date, habitCompletions });
+      const response = await axios.put(`${HABIT_LOGS_URL}/${id}`, { date, habitCompletions });
 
       const updatedLogs = logsArray.map((log) =>
         log.id === id ? { ...log, date, habitCompletions } : log
@@ -129,7 +130,7 @@ export const deleteHabitLog = createAsyncThunk(
       const state = getState() as { habitLogs: { habitLogs: DateEntry[] } };
       const logsArray = state.habitLogs.habitLogs; // Extract the actual array
 
-      await axios.delete(`${API_URL}/${id}`);
+      await axios.delete(`${HABIT_LOGS_URL}/${id}`);
 
       const updatedLogs = logsArray.filter((entry) => entry.id !== id);
       return calculateStreaks(updatedLogs);

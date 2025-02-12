@@ -28,15 +28,16 @@ export interface HabitsState {
 }
 
 // API Configuration
-const API_URL = "http://localhost:4000/api/habits";
-const HABIT_LOGS_URL = "http://localhost:4000/api/habitLogs"; // Habit Logs API
+const API_BASE = process.env.REACT_APP_API_BASE;
+const HABITS_URL = `${API_BASE}/api/habits`;
+const HABIT_LOGS_URL = `${API_BASE}/api/habitlogs`; // Habit Logs API
 
 // Fetch all habits
 export const fetchHabits = createAsyncThunk(
   "habits/fetchHabits",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get(API_URL);
+      const response = await axios.get(HABITS_URL);
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data || "Failed to fetch habits");
@@ -50,7 +51,7 @@ export const addHabit = createAsyncThunk(
   async (newHabit: Omit<Habit, "id">, { getState, dispatch, rejectWithValue }) => {
     try {
       // Create new habit
-      const response = await axios.post(API_URL, newHabit);
+      const response = await axios.post(HABITS_URL, newHabit);
       const habit: Habit = response.data;
 
       // Get current habit logs from Redux
@@ -92,7 +93,7 @@ export const updateHabit = createAsyncThunk(
   "habits/updateHabit",
   async (updatedHabit: Habit, { rejectWithValue }) => {
     try {
-      const response = await axios.put(`${API_URL}/${updatedHabit.id}`, updatedHabit);
+      const response = await axios.put(`${HABITS_URL}/${updatedHabit.id}`, updatedHabit);
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data || "Failed to update habit");
@@ -105,7 +106,7 @@ export const deleteHabit = createAsyncThunk(
   "habits/deleteHabit",
   async (habitId: number, { getState, dispatch, rejectWithValue }) => {
     try {
-      await axios.delete(`${API_URL}/${habitId}`);
+      await axios.delete(`${HABITS_URL}/${habitId}`);
 
       // Get current habit logs
       const state = getState() as RootState;
