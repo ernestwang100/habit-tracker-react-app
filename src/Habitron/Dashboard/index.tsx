@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer } from "recharts";
 import { Plus } from "lucide-react";
 import StreakMainChart from "../Charts/StreakMainChart";
+import HabitCompletionChart from "../Charts/HabitCompletionChart";
 import HabitTrackerTable from "../Tables";
 import HabitList from "../HabitList";
 import { useSelector, useDispatch } from "react-redux";
@@ -51,6 +52,7 @@ function Dashboard() {
 
             <div>
               <StreakMainChart habitLogs={habitLogs} />
+              <HabitCompletionChart habitLogs={habitLogs} />
               <h2 className="text-xl font-semibold mb-4">Streak</h2>
             </div>
           </>
