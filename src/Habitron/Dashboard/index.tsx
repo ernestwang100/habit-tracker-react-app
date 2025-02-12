@@ -10,10 +10,12 @@ import { RootState } from "../redux/store";
 import { useEffect } from "react";
 import { fetchHabitLogs } from "../redux/slices/habitLogsSlice";
 import { AppDispatch } from "../redux/store"; // ✅ Import the typed dispatch
+import ColorPicker from "../Charts/ColorPicker";
 
 function Dashboard() {
   const [activeTab, setActiveTab] = useState("This week");
 
+  const habits = useSelector((state: RootState) => state.habits.habits);
   const habitLogs = useSelector(
     (state: RootState) => state.habitLogs.habitLogs
   );
@@ -23,6 +25,14 @@ function Dashboard() {
   useEffect(() => {
     dispatch(fetchHabitLogs());
   }, [dispatch]);
+
+  const [colorPalette, setColorPalette] = useState<string[]>([
+    "#3498db",
+    "#e74c3c",
+    "#f1c40f",
+    "#2ecc71",
+    "#9b59b6",
+  ]);
 
   const renderContent = () => {
     switch (activeTab) {
@@ -52,7 +62,13 @@ function Dashboard() {
 
             <div>
               <StreakMainChart habitLogs={habitLogs} />
-              <HabitCompletionChart habitLogs={habitLogs} />
+              <ColorPicker onChange={setColorPalette} />
+              <HabitCompletionChart
+                habitLogs={habitLogs}
+                habits={habits}
+                colorPalette={colorPalette}
+              />
+
               <h2 className="text-xl font-semibold mb-4">Streak</h2>
             </div>
           </>
