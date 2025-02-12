@@ -28,7 +28,7 @@ export interface HabitsState {
 }
 
 // API Configuration
-const API_BASE = process.env.REACT_APP_API_BASE;
+const API_BASE = import.meta.env.VITE_API_BASE;
 const HABITS_URL = `${API_BASE}/api/habits`;
 const HABIT_LOGS_URL = `${API_BASE}/api/habitlogs`; // Habit Logs API
 
