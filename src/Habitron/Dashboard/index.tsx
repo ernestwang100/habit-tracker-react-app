@@ -19,20 +19,13 @@ function Dashboard() {
   const habitLogs = useSelector(
     (state: RootState) => state.habitLogs.habitLogs
   );
+  const colorPalette = useSelector((state: RootState) => state.colors.colors);
 
   const dispatch: AppDispatch = useDispatch();
 
   useEffect(() => {
     dispatch(fetchHabitLogs());
   }, [dispatch]);
-
-  const [colorPalette, setColorPalette] = useState<string[]>([
-    "#3498db",
-    "#e74c3c",
-    "#f1c40f",
-    "#2ecc71",
-    "#9b59b6",
-  ]);
 
   const renderContent = () => {
     switch (activeTab) {
@@ -62,7 +55,7 @@ function Dashboard() {
 
             <div>
               <StreakMainChart habitLogs={habitLogs} />
-              <ColorPicker onChange={setColorPalette} />
+              <ColorPicker />
               <HabitCompletionChart
                 habitLogs={habitLogs}
                 habits={habits}

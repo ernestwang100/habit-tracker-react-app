@@ -1,34 +1,39 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { AppDispatch, RootState } from "../redux/store";
+import { fetchColors, updateColors } from "../redux/slices/colorSlice";
 
-interface ColorPickerProps {
-  onChange: (colors: string[]) => void;
-}
+const ColorPicker: React.FC = () => {
+  const dispatch = useDispatch<AppDispatch>();
+  const colors = useSelector((state: RootState) => state.colors.colors);
+  const [localColors, setLocalColors] = useState<string[]>(colors);
 
-const ColorPicker: React.FC<ColorPickerProps> = ({ onChange }) => {
-  const [colors, setColors] = useState<string[]>([
-    "#3498db",
-    "#e74c3c",
-    "#f1c40f",
-    "#2ecc71",
-    "#9b59b6",
-  ]);
+  useEffect(() => {
+    dispatch(fetchColors()); // Fetch colors on mount
+  }, [dispatch]);
+
+  useEffect(() => {
+    setLocalColors(colors); // Sync local state when Redux updates
+  }, [colors]);
 
   const handleColorChange = (index: number, newColor: string) => {
-    const updatedColors = [...colors];
+    const updatedColors = [...localColors];
     updatedColors[index] = newColor;
-    setColors(updatedColors);
-    onChange(updatedColors);
+    setLocalColors(updatedColors);
+    dispatch(updateColors(updatedColors)); // Save to backend
   };
 
   const addColor = () => {
-    setColors([...colors, "#ffffff"]);
+    const newColors = [...localColors, "#ffffff"];
+    setLocalColors(newColors);
+    dispatch(updateColors(newColors));
   };
 
   const removeColor = (index: number) => {
-    if (colors.length > 1) {
-      const updatedColors = colors.filter((_, i) => i !== index);
-      setColors(updatedColors);
-      onChange(updatedColors);
+    if (localColors.length > 1) {
+      const newColors = localColors.filter((_, i) => i !== index);
+      setLocalColors(newColors);
+      dispatch(updateColors(newColors));
     }
   };
 
@@ -36,7 +41,7 @@ const ColorPicker: React.FC<ColorPickerProps> = ({ onChange }) => {
     <div className="p-4 bg-gray-100 rounded-lg shadow-md">
       <h3 className="text-lg font-semibold mb-2">Customize Colors</h3>
       <div className="flex flex-wrap gap-3">
-        {colors.map((color, index) => (
+        {localColors.map((color, index) => (
           <div key={index} className="flex items-center space-x-2">
             <input
               type="color"
