@@ -109,8 +109,9 @@ export const deleteHabit = createAsyncThunk(
       await axios.delete(`${HABITS_URL}/${habitId}`);
 
       // Get current habit logs
-      const state = getState() as RootState;
-      const updatedLogs = state.habitLogs.map((log: DateEntry) => ({
+      const state = getState() as { habitLogs: { habitLogs: DateEntry[] } };
+      const logsArray = state.habitLogs.habitLogs; // Extract the actual array
+      const updatedLogs = logsArray.map((log: DateEntry) => ({
         ...log,
         habitCompletions: log.habitCompletions.filter(h => h.habitId !== habitId)
       }));
