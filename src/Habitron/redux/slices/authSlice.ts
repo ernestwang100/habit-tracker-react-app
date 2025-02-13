@@ -1,6 +1,8 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import axios from "axios";
 
+const API_BASE = import.meta.env.VITE_API_BASE;
+const AUTH_URL = `${API_BASE}/api/auth`;
 interface AuthState {
   user: { id: string; email: string } | null;
   token: string | null;
@@ -19,7 +21,7 @@ export const signupUser = createAsyncThunk(
   "auth/signup",
   async ({ email, password }: { email: string; password: string }, { rejectWithValue }) => {
     try {
-      const response = await axios.post("/api/auth/signup", { email, password });
+      const response = await axios.post(`${AUTH_URL}/signup`, { email, password });
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || "Signup failed");
@@ -31,7 +33,7 @@ export const loginUser = createAsyncThunk(
   "auth/login",
   async ({ email, password }: { email: string; password: string }, { rejectWithValue }) => {
     try {
-      const response = await axios.post("/api/auth/login", { email, password });
+      const response = await axios.post(`${AUTH_URL}/login`, { email, password });
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || "Login failed");
