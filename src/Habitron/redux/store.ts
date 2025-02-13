@@ -9,7 +9,7 @@ export const store = configureStore({
     habits: habitsReducer,
     habitLogs: habitLogsReducer,
     colors: colorReducer,
-    users: authReducer,
+    auth: authReducer,
   },
 });
 

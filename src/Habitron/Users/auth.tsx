@@ -1,33 +1,37 @@
 import React, { useState } from "react";
-import { useDispatch } from "react-redux";
-import { setUser } from "../redux/slices/authSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { signupUser, loginUser } from "../redux/slices/authSlice";
+import { RootState } from "../redux/store";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 
 const AuthForm: React.FC<{ isSignup: boolean }> = ({ isSignup }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { status, error } = useSelector((state: RootState) => state.auth);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
-    try {
-      const endpoint = isSignup ? "/api/auth/signup" : "/api/auth/login";
-      const response = await axios.post(endpoint, { email, password });
-      dispatch(setUser(response.data));
-      navigate("/dashboard");
-    } catch (err) {
-      setError("Authentication failed. Please try again.");
+
+    if (isSignup) {
+      dispatch(signupUser({ email, password }) as any);
+    } else {
+      dispatch(loginUser({ email, password }) as any);
     }
   };
+
+  // Navigate when auth succeeds
+  React.useEffect(() => {
+    if (status === "succeeded") {
+      navigate("/dashboard");
+    }
+  }, [status, navigate]);
 
   return (
     <div className="auth-container">
       <h2>{isSignup ? "Sign Up" : "Log In"}</h2>
-      {error && <p className="error">{error}</p>}
+      {status === "failed" && <p className="error">{error}</p>}
       <form onSubmit={handleSubmit}>
         <input
           type="email"
@@ -43,7 +47,13 @@ const AuthForm: React.FC<{ isSignup: boolean }> = ({ isSignup }) => {
           onChange={(e) => setPassword(e.target.value)}
           required
         />
-        <button type="submit">{isSignup ? "Sign Up" : "Log In"}</button>
+        <button type="submit" disabled={status === "loading"}>
+          {status === "loading"
+            ? "Processing..."
+            : isSignup
+            ? "Sign Up"
+            : "Log In"}
+        </button>
       </form>
     </div>
   );
