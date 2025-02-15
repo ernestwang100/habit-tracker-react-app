@@ -2,12 +2,14 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import axios from "axios";
 import { RootState } from "../store"; // Ensure you have a proper RootState
+import {AuthState} from "./authSlice";
 
 // Types
 export interface Habit {
   id: number;
   name: string;
   icon: string;
+  userId: string;
 }
 
 export interface HabitCompletion {
@@ -35,9 +37,11 @@ const HABIT_LOGS_URL = `${API_BASE}/api/habitlogs`; // Habit Logs API
 // Fetch all habits
 export const fetchHabits = createAsyncThunk(
   "habits/fetchHabits",
-  async (_, { rejectWithValue }) => {
+  async (_, { rejectWithValue, getState }) => {
+    const state = getState() as { auth: AuthState };
+    const userId = state.auth.user?.id; // Use optional chaining in case user is null
     try {
-      const response = await axios.get(HABITS_URL);
+      const response = await axios.get(`${HABITS_URL}?userId=${userId}`);
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data || "Failed to fetch habits");
@@ -49,9 +53,11 @@ export const fetchHabits = createAsyncThunk(
 export const addHabit = createAsyncThunk(
   "habits/addHabit",
   async (newHabit: Omit<Habit, "id">, { getState, dispatch, rejectWithValue }) => {
+    const state = getState() as { auth: AuthState };
+    const userId = state.auth.user?.id;
     try {
       // Create new habit
-      const response = await axios.post(HABITS_URL, newHabit);
+      const response = await axios.post(`${HABITS_URL}?userId=${userId}`, newHabit);
       const habit: Habit = response.data;
 
       // Get current habit logs from Redux
@@ -91,9 +97,11 @@ export const addHabit = createAsyncThunk(
 // Update an existing habit
 export const updateHabit = createAsyncThunk(
   "habits/updateHabit",
-  async (updatedHabit: Habit, { rejectWithValue }) => {
+  async (updatedHabit: Habit, { rejectWithValue, getState }) => {
+    const state = getState() as { auth: AuthState };
+    const userId = state.auth.user?.id;
     try {
-      const response = await axios.put(`${HABITS_URL}/${updatedHabit.id}`, updatedHabit);
+      const response = await axios.put(`${HABITS_URL}?userId=${userId}/${updatedHabit.id}`, updatedHabit);
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data || "Failed to update habit");
@@ -105,8 +113,10 @@ export const updateHabit = createAsyncThunk(
 export const deleteHabit = createAsyncThunk(
   "habits/deleteHabit",
   async (habitId: number, { getState, dispatch, rejectWithValue }) => {
+    const state = getState() as { auth: AuthState };
+    const userId = state.auth.user?.id;
     try {
-      await axios.delete(`${HABITS_URL}/${habitId}`);
+      await axios.delete(`${HABITS_URL}?userId=${userId}/${habitId}`);
 
       // Get current habit logs
       const state = getState() as { habitLogs: { habitLogs: DateEntry[] } };
@@ -128,12 +138,13 @@ export const deleteHabit = createAsyncThunk(
 // Update all habit logs in the backend
 export const updateAllHabitLogs = createAsyncThunk(
   "habitLogs/updateAllHabitLogs",
-  async (updatedLogs: DateEntry[], { rejectWithValue }) => {
+  async (updatedLogs: DateEntry[], { rejectWithValue, getState }) => {
     console.log("🚀 Dispatching batch update for habit logs"); // Log when it's triggered
     console.log("📦 Logs to update:", updatedLogs); // Log data before sending
-
+    const state = getState() as { auth: AuthState };
+    const userId = state.auth.user?.id;
     try {
-      const response = await axios.put(`${HABIT_LOGS_URL}/batchUpdate`, updatedLogs);
+      const response = await axios.put(`${HABITS_URL}?userId=${userId}/batchUpdate`, updatedLogs);
       console.log("✅ Batch update success:", response.data); // Log successful response
       return updatedLogs;
     } catch (error: any) {

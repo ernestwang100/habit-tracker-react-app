@@ -13,10 +13,17 @@ function HabitTrackerTable() {
   const habitLogs = useSelector(
     (state: RootState) => state.habitLogs.habitLogs
   );
+  const userId = useSelector((state: RootState) => state.auth.user?.id); // Get userId from Redux
 
   useEffect(() => {
-    dispatch(habitLogsSlice.fetchHabitLogs());
-  }, [dispatch]);
+    const interval = setInterval(() => {
+      if (userId) {
+        dispatch(habitLogsSlice.fetchHabitLogs());
+        clearInterval(interval);
+      }
+    }, 1000); // Retry every second
+    return () => clearInterval(interval); // Cleanup on unmount
+  }, [userId, dispatch]);
 
   const handleDateChange = (dateEntryId: string, newDate: string) => {
     const updatedHabitCompletions = habitLogs.find(

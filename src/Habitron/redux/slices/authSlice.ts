@@ -3,7 +3,8 @@ import axios from "axios";
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 const AUTH_URL = `${API_BASE}/api/auth`;
-interface AuthState {
+
+export interface AuthState {
   user: { id: string; email: string } | null;
   token: string | null;
   status: "idle" | "loading" | "succeeded" | "failed";
@@ -49,6 +50,7 @@ const authSlice = createSlice({
       state.user = null;
       state.token = null;
       localStorage.removeItem("token");
+      console.log("User logged out, state:", state);
     },
   },
   extraReducers: (builder) => {
@@ -62,6 +64,8 @@ const authSlice = createSlice({
         state.user = action.payload.user;
         state.token = action.payload.token;
         localStorage.setItem("token", action.payload.token);
+        console.log("Signup Success, updated state:", state);
+
       })
       .addCase(signupUser.rejected, (state, action) => {
         state.status = "failed";
@@ -76,10 +80,12 @@ const authSlice = createSlice({
         state.user = action.payload.user;
         state.token = action.payload.token;
         localStorage.setItem("token", action.payload.token);
+        console.log("Login Success, updated state:", state.user);
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.payload as string;
+        console.log("Login Failed, error:", action.payload);
       });
   },
 });

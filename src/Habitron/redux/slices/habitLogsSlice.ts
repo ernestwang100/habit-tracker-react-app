@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import axios from "axios";
-
+import {AuthState} from "./authSlice";
 const API_BASE = import.meta.env.VITE_API_BASE;
 const HABIT_LOGS_URL = `${API_BASE}/api/habitlogs`;
 
@@ -13,10 +13,12 @@ interface HabitCompletion {
 interface DateEntry {
   id: string;
   date: string;
+  userId: string;
   habitCompletions: HabitCompletion[];
   allHabitsCompleted: boolean;
   streakDays: number;
 }
+
 
 // 🔹 Calculate streaks based on sorted habit logs
 const calculateStreaks = (logs: DateEntry[]): DateEntry[] => {
@@ -36,33 +38,40 @@ const calculateStreaks = (logs: DateEntry[]): DateEntry[] => {
 // Async Thunks
 export const fetchHabitLogs = createAsyncThunk(
   "habitLogs/fetchHabitLogs",
-  async (_, { rejectWithValue }) => {
+  async (_, { rejectWithValue, getState }) => {
+    const state = getState() as { auth: AuthState };
+    const userId = state.auth.user?.id; // Use optional chaining in case user is null
+
     try {
-      const response = await axios.get(HABIT_LOGS_URL);
-      return calculateStreaks(response.data); // 🔹 Ensure streaks are calculated on fetch
+      const response = await axios.get(`${HABIT_LOGS_URL}?userId=${userId}`);
+      return calculateStreaks(response.data);
     } catch (error: any) {
       return rejectWithValue(error.response?.data || "Failed to fetch logs");
     }
   }
 );
 
+
 export const addHabitLog = createAsyncThunk(
   "habitLogs/addHabitLog",
   async (habitCompletions: HabitCompletion[], { rejectWithValue, getState }) => {
+    const state = getState() as { auth: AuthState, habitLogs: { habitLogs: DateEntry[] } };
+    const userId = state.auth.user?.id; 
+    const logsArray = state.habitLogs.habitLogs;
+
     try {
-      const state = getState() as { habitLogs: { habitLogs: DateEntry[] } };
-      const logsArray = state.habitLogs.habitLogs; // Extract the actual array
       const newLog = {
         date: new Date().toISOString().split("T")[0],
+        userId,
         habitCompletions,
         allHabitsCompleted: habitCompletions.every((h) => h.completed),
-        streakDays: 0, // Default before calculation
+        streakDays: 0,
       };
 
-      const response = await axios.post(HABIT_LOGS_URL, newLog);
+      const response = await axios.post(`${HABIT_LOGS_URL}?userId=${userId}`, newLog);
       const updatedLogs = calculateStreaks([...logsArray, response.data]);
 
-      return updatedLogs; // 🔹 Return the entire updated state
+      return updatedLogs;
     } catch (error: any) {
       return rejectWithValue(error.response?.data || "Failed to add date");
     }
@@ -70,23 +79,24 @@ export const addHabitLog = createAsyncThunk(
 );
 
 
+
 export const updateLog = createAsyncThunk(
   "habitLogs/updateLog",
   async ({ id, habitCompletions, allHabitsCompleted }: { id: string; habitCompletions: HabitCompletion[]; allHabitsCompleted: boolean }, { rejectWithValue, getState }) => {
+    const state = getState() as { auth: AuthState; habitLogs: { habitLogs: DateEntry[] } };
+    const userId = state.auth.user?.id; 
+    const logsArray = state.habitLogs.habitLogs;
+    console.log("🌟 Extracted habitLogs array:", logsArray);
+
+    if (!userId) {
+      return rejectWithValue("User ID is required");
+    }
+
     console.log("🚀 updateLog called with:", id, habitCompletions, allHabitsCompleted);
 
-    try {
-      const state = getState() as { habitLogs: { habitLogs: DateEntry[] } };
-      const logsArray = state.habitLogs.habitLogs; // Extract the actual array
-
-      console.log("🌟 Extracted habitLogs array:", logsArray);
-
-      if (!Array.isArray(logsArray)) {
-        console.error("❌ Extracted state.habitLogs.habitLogs is not an array:", logsArray);
-        return rejectWithValue("Invalid state: habitLogs.habitLogs is not an array");
-      }
-      
-      const response = await axios.put(`${HABIT_LOGS_URL}/${id}`, {
+    try {      
+      const response = await axios.put(`${HABIT_LOGS_URL}?userId=${userId}/${id}`, {
+        userId,
         habitCompletions,
         allHabitsCompleted,
       });
@@ -106,11 +116,18 @@ export const updateLog = createAsyncThunk(
 export const editHabitLogDate = createAsyncThunk(
   "habitLogs/editHabitLogDate",
   async ({ id, date, habitCompletions }: { id: string; date: string; habitCompletions: any[] }, { rejectWithValue, getState }) => {
-    try {
-      const state = getState() as { habitLogs: { habitLogs: DateEntry[] } };
+          const state = getState() as { auth: AuthState; habitLogs: { habitLogs: DateEntry[] } };
+      const userId = state.auth.user?.id; 
       const logsArray = state.habitLogs.habitLogs; // Extract the actual array
 
-      const response = await axios.put(`${HABIT_LOGS_URL}/${id}`, { date, habitCompletions });
+      if (!userId) {
+        return rejectWithValue("User ID is required");
+      }
+      
+      try {
+
+
+      await axios.put(`${HABIT_LOGS_URL}?userId=${userId}/${id}`, { userId, date, habitCompletions });
 
       const updatedLogs = logsArray.map((log) =>
         log.id === id ? { ...log, date, habitCompletions } : log
@@ -126,11 +143,18 @@ export const editHabitLogDate = createAsyncThunk(
 export const deleteHabitLog = createAsyncThunk(
   "habitLogs/deleteHabitLog",
   async (id: string, { rejectWithValue, getState }) => {
-    try {
-      const state = getState() as { habitLogs: { habitLogs: DateEntry[] } };
-      const logsArray = state.habitLogs.habitLogs; // Extract the actual array
+    const state = getState() as { auth: AuthState; habitLogs: { habitLogs: DateEntry[] } };
+    const userId = state.auth.user?.id; 
+    const logsArray = state.habitLogs.habitLogs; // Extract the actual array
 
-      await axios.delete(`${HABIT_LOGS_URL}/${id}`);
+    if (!userId) {
+      return rejectWithValue("User ID is required");
+    }
+
+    try {
+
+
+      await axios.delete(`${HABIT_LOGS_URL}?userId=${userId}/${id}`, { data: { userId } });
 
       const updatedLogs = logsArray.filter((entry) => entry.id !== id);
       return calculateStreaks(updatedLogs);
