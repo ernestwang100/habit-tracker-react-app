@@ -1,10 +1,31 @@
 import { useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
-import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
+import { Card, CardContent } from "../../components/ui/card";
+import { Input } from "../../components/ui/input";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "../../components/ui/select";
+import {
+  Table,
+  TableHeader,
+  TableRow,
+  TableHead,
+  TableBody,
+  TableCell,
+} from "../../components/ui/table";
 
-const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+const daysOfWeek = [
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+];
 const timeIntervals = [15, 30, 60];
 
 export default function ScheduleTable() {
@@ -16,7 +37,9 @@ export default function ScheduleTable() {
     const times = [];
     let [hours, minutes] = startTime.split(":").map(Number);
     for (let i = 0; i < 24 * (60 / interval); i++) {
-      times.push(`${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`);
+      times.push(
+        `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`
+      );
       minutes += interval;
       if (minutes >= 60) {
         hours += 1;
@@ -28,7 +51,10 @@ export default function ScheduleTable() {
 
   const orderedDays = (() => {
     const startIndex = daysOfWeek.indexOf(weekStart);
-    return [...daysOfWeek.slice(startIndex), ...daysOfWeek.slice(0, startIndex)];
+    return [
+      ...daysOfWeek.slice(startIndex),
+      ...daysOfWeek.slice(0, startIndex),
+    ];
   })();
 
   return (
@@ -36,12 +62,23 @@ export default function ScheduleTable() {
       <CardContent>
         <div className="flex space-x-4 mb-4">
           <div>
-            <label className="block text-sm font-medium">Schedule Start Time</label>
-            <Input type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} />
+            <label className="block text-sm font-medium">
+              Schedule Start Time
+            </label>
+            <Input
+              type="time"
+              value={startTime}
+              onChange={(e) => setStartTime(e.target.value)}
+            />
           </div>
           <div>
-            <label className="block text-sm font-medium">Time Interval (mins)</label>
-            <Select value={String(interval)} onValueChange={(value) => setInterval(Number(value))}>
+            <label className="block text-sm font-medium">
+              Time Interval (mins)
+            </label>
+            <Select
+              value={String(interval)}
+              onValueChange={(value) => setInterval(Number(value))}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Select interval" />
               </SelectTrigger>
@@ -85,7 +122,9 @@ export default function ScheduleTable() {
               <TableRow key={index}>
                 <TableCell>{time}</TableCell>
                 {orderedDays.map((day) => (
-                  <TableCell key={day} className="border">-</TableCell>
+                  <TableCell key={day} className="border">
+                    -
+                  </TableCell>
                 ))}
               </TableRow>
             ))}

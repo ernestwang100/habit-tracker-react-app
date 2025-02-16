@@ -11,6 +11,7 @@ import { useEffect } from "react";
 import { fetchHabitLogs } from "../redux/slices/habitLogsSlice";
 import { AppDispatch } from "../redux/store"; // ✅ Import the typed dispatch
 import ColorPicker from "../Charts/ColorPicker";
+import ScheduleTable from "../Schedule";
 
 function Dashboard() {
   const [activeTab, setActiveTab] = useState("This week");
@@ -43,6 +44,8 @@ function Dashboard() {
               <h2 className="text-xl font-semibold mb-4">Habits</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <HabitList></HabitList>
+
+                <ScheduleTable></ScheduleTable>
                 {/* New Page Button */}
                 <div className="flex items-center justify-center">
                   <button className="flex items-center gap-2 text-gray-400 hover:text-gray-600">
