@@ -45,6 +45,8 @@ function HabitTrackerTable() {
     dateEntryId: string,
     newStatus: boolean
   ) => {
+    const dateEntry = habitLogs.find((entry) => entry.id === dateEntryId);
+    if (!dateEntry) return;
     const updatedHabitCompletions =
       habitLogs
         .find((entry) => entry.id === dateEntryId)
@@ -57,6 +59,7 @@ function HabitTrackerTable() {
       dispatch(
         habitLogsSlice.updateLog({
           id: dateEntryId,
+          date: dateEntry.date,
           habitCompletions: updatedHabitCompletions,
           allHabitsCompleted: newStatus, // Save to backend
         })
@@ -84,6 +87,9 @@ function HabitTrackerTable() {
         : habit
     );
 
+    // Extract the existing date
+    const { date } = dateEntry;
+
     // Check if all habits are completed after the toggle
     const allChecked = updatedHabitCompletions.every((h) => h.completed);
     console.log(`All habits completed for log ${dateEntryId}: ${allChecked}`);
@@ -92,6 +98,7 @@ function HabitTrackerTable() {
     dispatch(
       habitLogsSlice.updateLog({
         id: dateEntryId,
+        date,
         habitCompletions: updatedHabitCompletions,
         allHabitsCompleted: allChecked,
       })

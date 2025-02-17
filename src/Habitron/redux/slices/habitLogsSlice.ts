@@ -82,7 +82,7 @@ export const addHabitLog = createAsyncThunk(
 
 export const updateLog = createAsyncThunk(
   "habitLogs/updateLog",
-  async ({ id, habitCompletions, allHabitsCompleted }: { id: string; habitCompletions: HabitCompletion[]; allHabitsCompleted: boolean }, { rejectWithValue, getState }) => {
+  async ({ id, date, habitCompletions, allHabitsCompleted }: { id: string; date: string; habitCompletions: HabitCompletion[]; allHabitsCompleted: boolean }, { rejectWithValue, getState }) => {
     const state = getState() as { auth: AuthState; habitLogs: { habitLogs: DateEntry[] } };
     const userId = state.auth.user?.id; 
     const logsArray = state.habitLogs.habitLogs;
@@ -92,10 +92,11 @@ export const updateLog = createAsyncThunk(
       return rejectWithValue("User ID is required");
     }
 
-    console.log("🚀 updateLog called with:", id, habitCompletions, allHabitsCompleted);
+    console.log("🚀 updateLog called with:", id, date, habitCompletions, allHabitsCompleted);
 
     try {      
-      const response = await axios.put(`${HABIT_LOGS_URL}?userId=${userId}/${id}`, {
+      const response = await axios.put(`${HABIT_LOGS_URL}/${id}`, {
+        date,
         userId,
         habitCompletions,
         allHabitsCompleted,

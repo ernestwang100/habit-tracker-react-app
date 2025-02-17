@@ -12,7 +12,7 @@ function Habitron() {
         <Routes>
           {/* Authentication Routes */}
           <Route path="/*" element={<AuthRoutes />} />
-          {/* <Route path="/" element={<Navigate to="Dashboard" />} /> */}
+          <Route path="/" element={<Navigate to="Dashboard" />} />
           {/* <Route path="Dashboard" element={<Dashboard />}></Route> */}
           <Route path="/dashboard" element={<ProtectedRoute />}>
             <Route path="" element={<Dashboard />} />
