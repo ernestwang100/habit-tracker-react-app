@@ -82,9 +82,12 @@ export const addHabitLog = createAsyncThunk(
 
 export const updateLog = createAsyncThunk(
   "habitLogs/updateLog",
-  async ({ id, date, habitCompletions, allHabitsCompleted }: { id: string; date: string; habitCompletions: HabitCompletion[]; allHabitsCompleted: boolean }, { rejectWithValue, getState }) => {
-    const state = getState() as { auth: AuthState; habitLogs: { habitLogs: DateEntry[] } };
-    const userId = state.auth.user?.id; 
+  async (
+    dateEntry: DateEntry, // Accept the whole DateEntry object as argument
+    { rejectWithValue, getState }
+  ) => {
+    const state = getState() as { auth: { user: { id: string } | null }; habitLogs: { habitLogs: DateEntry[] } };
+    const userId = state.auth.user?.id;
     const logsArray = state.habitLogs.habitLogs;
     console.log("🌟 Extracted habitLogs array:", logsArray);
 
@@ -92,21 +95,26 @@ export const updateLog = createAsyncThunk(
       return rejectWithValue("User ID is required");
     }
 
-    console.log("🚀 updateLog called with:", id, date, habitCompletions, allHabitsCompleted);
+    console.log("🚀 updateLog called with:", dateEntry);
 
-    try {      
-      const response = await axios.put(`${HABIT_LOGS_URL}/${id}`, {
-        date,
-        userId,
-        habitCompletions,
-        allHabitsCompleted,
+    try {
+      // Send the whole DateEntry object to the server
+      const response = await axios.put(`${HABIT_LOGS_URL}/${dateEntry.id}`, {
+        ...dateEntry, // Spread the whole DateEntry object
+        userId, // Ensure userId is included
       });
+
       console.log("✅ Response received:", response.data);
+
+      // Update the local state with the new data after successful response
       const updatedLogs = logsArray.map((log) =>
-        log.id === id ? { ...log, habitCompletions, allHabitsCompleted } : log
+        log.id === dateEntry.id
+          ? { ...log, ...dateEntry } // Spread the updated DateEntry back into the state
+          : log
       );
 
       return calculateStreaks(updatedLogs); // 🔹 Recalculate streaks
+
     } catch (error: any) {
       console.error("❌ Error updating log:", error.response?.data || error);
       return rejectWithValue(error.response?.data || "Failed to update log");
