@@ -136,7 +136,7 @@ export const deleteHabitLog = createAsyncThunk(
     try {
 
 
-      await axios.delete(`${HABIT_LOGS_URL}?userId=${userId}/${id}`, { data: { userId } });
+      await axios.delete(`${HABIT_LOGS_URL}/${id}`, { data: { userId } });
 
       const updatedLogs = logsArray.filter((entry) => entry.id !== id);
       return calculateStreaks(updatedLogs);
