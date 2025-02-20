@@ -26,19 +26,10 @@ function HabitTrackerTable() {
   }, [userId, dispatch]);
 
   const handleDateChange = (dateEntryId: string, newDate: string) => {
-    const updatedHabitCompletions = habitLogs.find(
-      (entry) => entry.id === dateEntryId
-    )?.habitCompletions; // Keep the habit completions the same
+    const dateEntry = habitLogs.find((entry) => entry.id === dateEntryId);
+    if (!dateEntry) return;
 
-    if (updatedHabitCompletions) {
-      dispatch(
-        habitLogsSlice.editHabitLogDate({
-          id: dateEntryId,
-          date: newDate,
-          habitCompletions: updatedHabitCompletions, // Pass the habit completions unchanged
-        })
-      );
-    }
+    dispatch(habitLogsSlice.updateLog({ ...dateEntry, date: newDate }));
   };
 
   const handleAllHabitsCompletionChange = (
@@ -47,64 +38,39 @@ function HabitTrackerTable() {
   ) => {
     const dateEntry = habitLogs.find((entry) => entry.id === dateEntryId);
     if (!dateEntry) return;
-    const updatedHabitCompletions =
-      habitLogs
-        .find((entry) => entry.id === dateEntryId)
-        ?.habitCompletions.map((habit) => ({
+
+    dispatch(
+      habitLogsSlice.updateLog({
+        ...dateEntry,
+        habitCompletions: dateEntry.habitCompletions.map((habit) => ({
           ...habit,
           completed: newStatus,
-        })) || [];
-
-    if (updatedHabitCompletions) {
-      dispatch(
-        habitLogsSlice.updateLog({
-          id: dateEntryId,
-          date: dateEntry.date,
-          habitCompletions: updatedHabitCompletions,
-          allHabitsCompleted: newStatus, // Save to backend
-        })
-      );
-    }
+        })),
+        allHabitsCompleted: newStatus,
+      })
+    );
   };
 
   const handleHabitCompletionChange = (
     dateEntryId: string,
     habitId: number
   ) => {
-    console.log(`Toggling habit ${habitId} for log ${dateEntryId}`);
-
-    // Find the relevant habit log entry
     const dateEntry = habitLogs.find((entry) => entry.id === dateEntryId);
-    if (!dateEntry) {
-      console.warn(`No log found for id ${dateEntryId}`);
-      return;
-    }
+    if (!dateEntry) return console.warn(`No log found for id ${dateEntryId}`);
 
-    // Toggle the specific habit's completion
     const updatedHabitCompletions = dateEntry.habitCompletions.map((habit) =>
       habit.habitId === habitId
         ? { ...habit, completed: !habit.completed }
         : habit
     );
 
-    // Extract the existing date
-    const { date } = dateEntry;
-
-    // Check if all habits are completed after the toggle
-    const allChecked = updatedHabitCompletions.every((h) => h.completed);
-    console.log(`All habits completed for log ${dateEntryId}: ${allChecked}`);
-
-    // Dispatch the update action and log the new state after dispatch
     dispatch(
       habitLogsSlice.updateLog({
-        id: dateEntryId,
-        date,
+        ...dateEntry,
         habitCompletions: updatedHabitCompletions,
-        allHabitsCompleted: allChecked,
+        allHabitsCompleted: updatedHabitCompletions.every((h) => h.completed),
       })
-    ).then(() => {
-      console.log("Update dispatched for log:", dateEntryId);
-    });
+    );
   };
 
   const sortedHabitLogs = [...habitLogs].sort(
