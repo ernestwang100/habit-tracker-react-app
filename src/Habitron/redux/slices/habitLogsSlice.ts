@@ -122,33 +122,6 @@ export const updateLog = createAsyncThunk(
   }
 );
 
-export const editHabitLogDate = createAsyncThunk(
-  "habitLogs/editHabitLogDate",
-  async ({ id, date, habitCompletions }: { id: string; date: string; habitCompletions: any[] }, { rejectWithValue, getState }) => {
-          const state = getState() as { auth: AuthState; habitLogs: { habitLogs: DateEntry[] } };
-      const userId = state.auth.user?.id; 
-      const logsArray = state.habitLogs.habitLogs; // Extract the actual array
-
-      if (!userId) {
-        return rejectWithValue("User ID is required");
-      }
-      
-      try {
-
-
-      await axios.put(`${HABIT_LOGS_URL}?userId=${userId}/${id}`, { userId, date, habitCompletions });
-
-      const updatedLogs = logsArray.map((log) =>
-        log.id === id ? { ...log, date, habitCompletions } : log
-      );
-
-      return calculateStreaks(updatedLogs);
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data || "Failed to update date");
-    }
-  }
-);
-
 export const deleteHabitLog = createAsyncThunk(
   "habitLogs/deleteHabitLog",
   async (id: string, { rejectWithValue, getState }) => {
@@ -209,10 +182,6 @@ const habitLogsSlice = createSlice({
       })
       .addCase(updateLog.fulfilled, (state, action) => {
         console.log("Updated habit log, new state:", action.payload);
-        state.habitLogs = action.payload;
-      })
-      .addCase(editHabitLogDate.fulfilled, (state, action) => {
-        console.log("Edited log date, new state:", action.payload);
         state.habitLogs = action.payload;
       })
       .addCase(deleteHabitLog.fulfilled, (state, action) => {
