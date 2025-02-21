@@ -37,9 +37,16 @@ export default function ScheduleTable() {
     const times = [];
     let [hours, minutes] = startTime.split(":").map(Number);
     for (let i = 0; i < 24 * (60 / interval); i++) {
+      // Normalize time if it goes past 24:00
+      const normalizedHours = hours % 24;
+
       times.push(
-        `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`
+        `${String(normalizedHours).padStart(2, "0")}:${String(minutes).padStart(
+          2,
+          "0"
+        )}`
       );
+
       minutes += interval;
       if (minutes >= 60) {
         hours += 1;
