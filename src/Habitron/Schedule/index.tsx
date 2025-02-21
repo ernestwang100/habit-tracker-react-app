@@ -16,6 +16,7 @@ import {
   TableBody,
   TableCell,
 } from "../../components/ui/table";
+import ItinerarySelect from "./ItinerarySelect";
 
 const daysOfWeek = [
   "Sunday",
@@ -32,6 +33,8 @@ export default function ScheduleTable() {
   const [startTime, setStartTime] = useState("08:00");
   const [interval, setInterval] = useState(30);
   const [weekStart, setWeekStart] = useState("Sunday");
+  const [itineraryItems, setItineraryItems] = useState<string[]>([]);
+  const [schedule, setSchedule] = useState<{ [key: string]: string }>({});
 
   const generateTimes = () => {
     const times = [];
@@ -125,12 +128,22 @@ export default function ScheduleTable() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {generateTimes().map((time, index) => (
-              <TableRow key={index}>
+            {generateTimes().map((time) => (
+              <TableRow key={time}>
                 <TableCell>{time}</TableCell>
                 {orderedDays.map((day) => (
-                  <TableCell key={day} className="border">
-                    -
+                  <TableCell key={`${day}-${time}`} className="border">
+                    <ItinerarySelect
+                      value={schedule[`${day}-${time}`] || ""}
+                      onChange={(value) =>
+                        setSchedule((prev) => ({
+                          ...prev,
+                          [`${day}-${time}`]: value,
+                        }))
+                      }
+                      itineraryItems={itineraryItems}
+                      setItineraryItems={setItineraryItems}
+                    />
                   </TableCell>
                 ))}
               </TableRow>
