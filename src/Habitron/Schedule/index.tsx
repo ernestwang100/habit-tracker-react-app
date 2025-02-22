@@ -130,9 +130,12 @@ export default function ScheduleTable() {
           <TableBody>
             {generateTimes().map((time) => (
               <TableRow key={time}>
-                <TableCell>{time}</TableCell>
+                <TableCell className="align-top p-2">{time}</TableCell>
                 {orderedDays.map((day) => (
-                  <TableCell key={`${day}-${time}`} className="border">
+                  <TableCell
+                    key={`${day}-${time}`}
+                    className="border align-top p-2"
+                  >
                     <ItinerarySelect
                       value={schedule[`${day}-${time}`] || ""}
                       onChange={(value) =>
