@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import {
   Select,
   SelectTrigger,
@@ -6,27 +7,28 @@ import {
   SelectContent,
   SelectItem,
 } from "../../components/ui/select";
+import { addItineraryItem } from "../redux/slices/itinerarySlice";
+import { RootState } from "../redux/store";
 
 interface ItinerarySelectProps {
   value: string;
   onChange: (value: string) => void;
-  itineraryItems: string[];
-  setItineraryItems: (items: string[]) => void;
 }
 
 export default function ItinerarySelect({
   value,
   onChange,
-  itineraryItems,
-  setItineraryItems,
 }: ItinerarySelectProps) {
+  const dispatch = useDispatch();
+  const itineraryItems = useSelector(
+    (state: RootState) => state.itinerary.items
+  );
   const [newItem, setNewItem] = useState("");
 
   const handleAddNewItem = () => {
     if (newItem.trim() && !itineraryItems.includes(newItem)) {
-      const updatedItems = [...itineraryItems, newItem];
-      setItineraryItems(updatedItems);
-      onChange(newItem);
+      dispatch(addItineraryItem(newItem)); // Dispatch action to add new item
+      onChange(newItem); // Update the selected value
     }
     setNewItem("");
   };

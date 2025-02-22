@@ -1,4 +1,5 @@
-import { useState } from "react";
+import React, { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { Card, CardContent } from "../../components/ui/card";
 import { Input } from "../../components/ui/input";
 import {
@@ -17,6 +18,15 @@ import {
   TableCell,
 } from "../../components/ui/table";
 import ItinerarySelect from "./ItinerarySelect";
+import {
+  setStartTime,
+  setInterval,
+  setWeekStart,
+  updateScheduleSlot,
+  removeScheduleSlot,
+} from "../redux/slices/scheduleSlice";
+import { addItineraryItem } from "../redux/slices/itinerarySlice";
+import { RootState } from "../redux/store";
 
 const daysOfWeek = [
   "Sunday",
@@ -30,26 +40,26 @@ const daysOfWeek = [
 const timeIntervals = [15, 30, 60];
 
 export default function ScheduleTable() {
-  const [startTime, setStartTime] = useState("08:00");
-  const [interval, setInterval] = useState(30);
-  const [weekStart, setWeekStart] = useState("Sunday");
-  const [itineraryItems, setItineraryItems] = useState<string[]>([]);
-  const [schedule, setSchedule] = useState<{ [key: string]: string }>({});
+  const dispatch = useDispatch();
+  const { startTime, interval, weekStart, schedule } = useSelector(
+    (state: RootState) => state.schedule
+  );
+  const { itineraryItems } = useSelector(
+    (state: RootState) => state.itinerary.items
+  );
 
+  // Function to generate time slots for the day
   const generateTimes = () => {
     const times = [];
     let [hours, minutes] = startTime.split(":").map(Number);
     for (let i = 0; i < 24 * (60 / interval); i++) {
-      // Normalize time if it goes past 24:00
       const normalizedHours = hours % 24;
-
       times.push(
         `${String(normalizedHours).padStart(2, "0")}:${String(minutes).padStart(
           2,
           "0"
         )}`
       );
-
       minutes += interval;
       if (minutes >= 60) {
         hours += 1;
@@ -59,6 +69,7 @@ export default function ScheduleTable() {
     return times;
   };
 
+  // Reorder days based on the start of the week
   const orderedDays = (() => {
     const startIndex = daysOfWeek.indexOf(weekStart);
     return [
@@ -66,6 +77,34 @@ export default function ScheduleTable() {
       ...daysOfWeek.slice(0, startIndex),
     ];
   })();
+
+  // Dispatch actions to update the start time, interval, and week start
+  const handleStartTimeChange = (e) => {
+    dispatch(setStartTime(e.target.value));
+  };
+
+  const handleIntervalChange = (value) => {
+    dispatch(setInterval(Number(value)));
+  };
+
+  const handleWeekStartChange = (value) => {
+    dispatch(setWeekStart(value));
+  };
+
+  // Dispatch actions to update the schedule slot
+  const handleItineraryChange = (day, time, value) => {
+    dispatch(
+      updateScheduleSlot({ slot: `${day}-${time}`, itineraryItemId: value })
+    );
+  };
+
+  useEffect(() => {
+    // Initialize itineraryItems if necessary
+    if (itineraryItems.length === 0) {
+      // You could add some initial items if needed
+      dispatch(addItineraryItem("Sample Itinerary Item"));
+    }
+  }, [itineraryItems, dispatch]);
 
   return (
     <Card className="p-4">
@@ -78,7 +117,7 @@ export default function ScheduleTable() {
             <Input
               type="time"
               value={startTime}
-              onChange={(e) => setStartTime(e.target.value)}
+              onChange={handleStartTimeChange}
             />
           </div>
           <div>
@@ -87,7 +126,7 @@ export default function ScheduleTable() {
             </label>
             <Select
               value={String(interval)}
-              onValueChange={(value) => setInterval(Number(value))}
+              onValueChange={handleIntervalChange}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select interval" />
@@ -103,7 +142,7 @@ export default function ScheduleTable() {
           </div>
           <div>
             <label className="block text-sm font-medium">Week Beginning</label>
-            <Select value={weekStart} onValueChange={setWeekStart}>
+            <Select value={weekStart} onValueChange={handleWeekStartChange}>
               <SelectTrigger>
                 <SelectValue placeholder="Select day" />
               </SelectTrigger>
@@ -139,13 +178,9 @@ export default function ScheduleTable() {
                     <ItinerarySelect
                       value={schedule[`${day}-${time}`] || ""}
                       onChange={(value) =>
-                        setSchedule((prev) => ({
-                          ...prev,
-                          [`${day}-${time}`]: value,
-                        }))
+                        handleItineraryChange(day, time, value)
                       }
                       itineraryItems={itineraryItems}
-                      setItineraryItems={setItineraryItems}
                     />
                   </TableCell>
                 ))}
