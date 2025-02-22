@@ -3,6 +3,8 @@ import habitsReducer from "./slices/habitsSlice";
 import habitLogsReducer from "./slices/habitLogsSlice";
 import colorReducer from "./slices/colorSlice";
 import authReducer from "./slices/authSlice";
+import itineraryReducer from "./slices/itinerarySlice";
+import scheduleReducer from "./slices/scheduleSlice";
 
 export const store = configureStore({
   reducer: {
@@ -10,6 +12,8 @@ export const store = configureStore({
     habitLogs: habitLogsReducer,
     colors: colorReducer,
     auth: authReducer,
+    itinerary: itineraryReducer,
+    schedule: scheduleReducer,
   },
 });
 
