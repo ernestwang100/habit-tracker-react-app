@@ -44,7 +44,7 @@ export default function ScheduleTable() {
   const { startTime, interval, weekStart, schedule } = useSelector(
     (state: RootState) => state.schedule
   );
-  const { itineraryItems } = useSelector(
+  const itineraryItems = useSelector(
     (state: RootState) => state.itinerary.items
   );
 
@@ -92,10 +92,15 @@ export default function ScheduleTable() {
   };
 
   // Dispatch actions to update the schedule slot
-  const handleItineraryChange = (day, time, value) => {
-    dispatch(
-      updateScheduleSlot({ slot: `${day}-${time}`, itineraryItemId: value })
-    );
+  const handleItineraryChange = (day: string, time: string, value: string) => {
+    if (value === "new-item") return; // Handle new items in ItinerarySelect
+    const slotKey = `${day}-${time}`;
+
+    if (value) {
+      dispatch(updateScheduleSlot({ slot: slotKey, itineraryItemId: value }));
+    } else {
+      dispatch(removeScheduleSlot(slotKey));
+    }
   };
 
   useEffect(() => {
