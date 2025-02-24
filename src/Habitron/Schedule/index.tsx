@@ -79,15 +79,15 @@ export default function ScheduleTable() {
   })();
 
   // Dispatch actions to update the start time, interval, and week start
-  const handleStartTimeChange = (e) => {
-    dispatch(setStartTime(e.target.value));
+  const handleStartTimeChange = (str: string) => {
+    dispatch(setStartTime(str));
   };
 
-  const handleIntervalChange = (value) => {
+  const handleIntervalChange = (value: Number) => {
     dispatch(setInterval(Number(value)));
   };
 
-  const handleWeekStartChange = (value) => {
+  const handleWeekStartChange = (value: string) => {
     dispatch(setWeekStart(value));
   };
 
