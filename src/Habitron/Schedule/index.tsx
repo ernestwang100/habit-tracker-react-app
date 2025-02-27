@@ -24,8 +24,12 @@ import {
   setWeekStart,
   updateScheduleSlot,
   removeScheduleSlot,
+  fetchSchedule,
 } from "../redux/slices/scheduleSlice";
-import { addItineraryItem } from "../redux/slices/itinerarySlice";
+import {
+  addItineraryItem,
+  fetchItineraryItems,
+} from "../redux/slices/itinerarySlice";
 import { RootState } from "../redux/store";
 
 const daysOfWeek = [
@@ -103,11 +107,21 @@ export default function ScheduleTable() {
     }
   };
 
+  // Fetch itinerary items and schedule on initial load
+  useEffect(() => {
+    if (itineraryItems.length === 0) {
+      dispatch(fetchItineraryItems()); // Fetch itinerary items if empty
+    }
+
+    dispatch(fetchSchedule()); // Fetch schedule data when the component loads
+  }, [dispatch, itineraryItems.length]);
+
   useEffect(() => {
     // Initialize itineraryItems if necessary
     if (itineraryItems.length === 0) {
-      // You could add some initial items if needed
-      dispatch(addItineraryItem("Sample Itinerary Item"));
+      dispatch(
+        addItineraryItem({ name: "Sample Itinerary Item", id: "sample-id" })
+      );
     }
   }, [itineraryItems, dispatch]);
 
@@ -122,7 +136,7 @@ export default function ScheduleTable() {
             <Input
               type="time"
               value={startTime}
-              onChange={handleStartTimeChange}
+              onChange={(e) => handleStartTimeChange(e.target.value)}
             />
           </div>
           <div>
@@ -131,7 +145,7 @@ export default function ScheduleTable() {
             </label>
             <Select
               value={String(interval)}
-              onValueChange={handleIntervalChange}
+              onValueChange={(value) => handleIntervalChange(Number(value))}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select interval" />

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   Select,
@@ -7,7 +7,10 @@ import {
   SelectContent,
   SelectItem,
 } from "../../components/ui/select";
-import { addItineraryItem } from "../redux/slices/itinerarySlice";
+import {
+  addItineraryItem,
+  fetchItinerary,
+} from "../redux/slices/itinerarySlice";
 import { RootState } from "../redux/store";
 
 interface ItinerarySelectProps {
@@ -23,11 +26,22 @@ export default function ItinerarySelect({
   const itineraryItems = useSelector(
     (state: RootState) => state.itinerary.items
   );
+  const status = useSelector((state: RootState) => state.itinerary.status);
   const [newItem, setNewItem] = useState("");
 
+  // Fetch itinerary items when the component mounts
+  useEffect(() => {
+    if (status === "idle") {
+      dispatch(fetchItinerary()); // Dispatch to fetch items from the API
+    }
+  }, [status, dispatch]);
+
   const handleAddNewItem = () => {
-    if (newItem.trim() && !itineraryItems.includes(newItem)) {
-      dispatch(addItineraryItem(newItem)); // Dispatch action to add new item
+    if (
+      newItem.trim() &&
+      !itineraryItems.some((item) => item.name === newItem)
+    ) {
+      dispatch(addItineraryItem({ name: newItem })); // Dispatch action to add new item
       onChange(newItem); // Update the selected value
     }
     setNewItem("");
@@ -41,8 +55,8 @@ export default function ItinerarySelect({
         </SelectTrigger>
         <SelectContent>
           {itineraryItems.map((item) => (
-            <SelectItem key={item} value={item}>
-              {item}
+            <SelectItem key={item.id} value={item.id}>
+              {item.name}
             </SelectItem>
           ))}
           <SelectItem value="add-new">➕ Add New</SelectItem>
