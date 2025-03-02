@@ -11,7 +11,7 @@ import {
   addItineraryItem,
   fetchItinerary,
 } from "../redux/slices/itinerarySlice";
-import { RootState } from "../redux/store";
+import { AppDispatch, RootState } from "../redux/store";
 
 interface ItinerarySelectProps {
   value: string;
@@ -22,7 +22,7 @@ export default function ItinerarySelect({
   value,
   onChange,
 }: ItinerarySelectProps) {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const itineraryItems = useSelector(
     (state: RootState) => state.itinerary.items
   );

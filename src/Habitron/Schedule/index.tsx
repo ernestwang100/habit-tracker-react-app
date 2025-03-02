@@ -30,7 +30,7 @@ import {
   addItineraryItem,
   fetchItineraryItems,
 } from "../redux/slices/itinerarySlice";
-import { RootState } from "../redux/store";
+import { AppDispatch, RootState } from "../redux/store";
 
 const daysOfWeek = [
   "Sunday",
@@ -44,7 +44,7 @@ const daysOfWeek = [
 const timeIntervals = [15, 30, 60];
 
 export default function ScheduleTable() {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const { startTime, interval, weekStart, schedule } = useSelector(
     (state: RootState) => state.schedule
   );
