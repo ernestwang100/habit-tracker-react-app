@@ -12,10 +12,12 @@ import {
   fetchItinerary,
 } from "../redux/slices/itinerarySlice";
 import { AppDispatch, RootState } from "../redux/store";
+import { ItineraryItem } from "../redux/slices/itinerarySlice";
 
 interface ItinerarySelectProps {
   value: string;
   onChange: (value: string) => void;
+  itineraryItems: ItineraryItem[];
 }
 
 export default function ItinerarySelect({

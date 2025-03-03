@@ -28,7 +28,7 @@ import {
 } from "../redux/slices/scheduleSlice";
 import {
   addItineraryItem,
-  fetchItineraryItems,
+  fetchItinerary,
 } from "../redux/slices/itinerarySlice";
 import { AppDispatch, RootState } from "../redux/store";
 
@@ -110,7 +110,7 @@ export default function ScheduleTable() {
   // Fetch itinerary items and schedule on initial load
   useEffect(() => {
     if (itineraryItems.length === 0) {
-      dispatch(fetchItineraryItems()); // Fetch itinerary items if empty
+      dispatch(fetchItinerary()); // Fetch itinerary items if empty
     }
 
     dispatch(fetchSchedule()); // Fetch schedule data when the component loads
@@ -119,9 +119,7 @@ export default function ScheduleTable() {
   useEffect(() => {
     // Initialize itineraryItems if necessary
     if (itineraryItems.length === 0) {
-      dispatch(
-        addItineraryItem({ name: "Sample Itinerary Item", id: "sample-id" })
-      );
+      dispatch(addItineraryItem({ name: "Sample Itinerary Item" }));
     }
   }, [itineraryItems, dispatch]);
 
