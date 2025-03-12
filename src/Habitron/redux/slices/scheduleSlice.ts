@@ -21,6 +21,19 @@ const initialState: ScheduleState = {
   weekStart: "Sunday", // Default start day of the week
 };
 
+// 5️⃣ Update schedule preferences
+export const updateSchedulePreferences = createAsyncThunk(
+  "schedule/updateSchedulePreferences",
+  async ({ userId, startTime, interval, weekStart }: { userId: string, startTime: string, interval: number, weekStart: string }, { rejectWithValue }) => {
+    try {
+      const response = await axios.put(`${SCHEDULE_URL}/preferences`, { userId, startTime, interval, weekStart });
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data || "Failed to update schedule preferences");
+    }
+  }
+);
+
 // Fetch schedule from the backend
 export const fetchSchedule = createAsyncThunk(
   "schedule/fetchSchedule",

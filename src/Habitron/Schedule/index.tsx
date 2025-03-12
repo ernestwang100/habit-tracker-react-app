@@ -25,6 +25,7 @@ import {
   updateScheduleSlot,
   removeScheduleSlot,
   fetchSchedule,
+  updateSchedulePreferences,
 } from "../redux/slices/scheduleSlice";
 import {
   addItineraryItem,
@@ -83,16 +84,39 @@ export default function ScheduleTable() {
   })();
 
   // Dispatch actions to update the start time, interval, and week start
+  // Dispatch actions to update the start time, interval, and week start
   const handleStartTimeChange = (str: string) => {
     dispatch(setStartTime(str));
+    const userId = "userId"; // Get the current user ID from your state
+    dispatch(
+      updateSchedulePreferences({ userId, startTime: str, interval, weekStart })
+    );
   };
 
-  const handleIntervalChange = (value: Number) => {
-    dispatch(setInterval(Number(value)));
+  const handleIntervalChange = (value: number) => {
+    dispatch(setInterval(value));
+    const userId = "userId"; // Get the current user ID from your state
+    dispatch(
+      updateSchedulePreferences({
+        userId,
+        startTime,
+        interval: value,
+        weekStart,
+      })
+    );
   };
 
   const handleWeekStartChange = (value: string) => {
     dispatch(setWeekStart(value));
+    const userId = "userId"; // Get the current user ID from your state
+    dispatch(
+      updateSchedulePreferences({
+        userId,
+        startTime,
+        interval,
+        weekStart: value,
+      })
+    );
   };
 
   // Dispatch actions to update the schedule slot
