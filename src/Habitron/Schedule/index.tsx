@@ -151,7 +151,7 @@ export default function ScheduleTable() {
     <Card className="p-4">
       <CardContent>
         <div className="flex space-x-4 mb-4">
-          <div>
+          <div className="flex-1">
             <label className="block text-sm font-medium">
               Schedule Start Time
             </label>
@@ -161,7 +161,7 @@ export default function ScheduleTable() {
               onChange={(e) => handleStartTimeChange(e.target.value)}
             />
           </div>
-          <div>
+          <div className="flex-1">
             <label className="block text-sm font-medium">
               Time Interval (mins)
             </label>
@@ -181,7 +181,7 @@ export default function ScheduleTable() {
               </SelectContent>
             </Select>
           </div>
-          <div>
+          <div className="flex-1">
             <label className="block text-sm font-medium">Week Beginning</label>
             <Select value={weekStart} onValueChange={handleWeekStartChange}>
               <SelectTrigger>
