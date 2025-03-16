@@ -13,6 +13,7 @@ import ScheduleTable from "../Schedule";
 import ColorPicker from "../Charts/ColorPicker";
 import { Plus } from "lucide-react";
 import Header from "../../components/Header"; // Import the Header component
+import ItinerarySelect from "../Schedule/ItinerarySelect";
 
 function Dashboard() {
   const [activeTab, setActiveTab] = useState("This week");
@@ -46,6 +47,8 @@ function Dashboard() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <HabitList />
 
+                {/* itinerary */}
+                <ItinerarySelect></ItinerarySelect>
                 <ScheduleTable />
                 {/* New Page Button */}
                 <div className="flex items-center justify-center">
