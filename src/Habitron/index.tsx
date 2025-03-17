@@ -4,6 +4,7 @@ import { Provider } from "react-redux";
 import { store } from "./redux/store";
 import AuthRoutes from "./routes/authRoutes";
 import ProtectedRoute from "./routes/protectedRoute";
+import ItineraryPage from "../pages/ItineraryPage";
 
 function Habitron() {
   return (
@@ -16,6 +17,7 @@ function Habitron() {
           {/* <Route path="Dashboard" element={<Dashboard />}></Route> */}
           <Route path="/dashboard" element={<ProtectedRoute />}>
             <Route path="" element={<Dashboard />} />
+            <Route path="/itinerary" element={<ItineraryPage />} />
           </Route>
         </Routes>
       </Provider>
