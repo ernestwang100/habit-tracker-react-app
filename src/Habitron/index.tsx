@@ -17,8 +17,8 @@ function Habitron() {
           {/* <Route path="Dashboard" element={<Dashboard />}></Route> */}
           <Route path="/dashboard" element={<ProtectedRoute />}>
             <Route path="" element={<Dashboard />} />
-            <Route path="/itinerary" element={<ItineraryPage />} />
           </Route>
+          <Route path="/itinerary" element={<ItineraryPage />} />
         </Routes>
       </Provider>
     </div>
