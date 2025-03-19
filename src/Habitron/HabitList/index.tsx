@@ -29,7 +29,9 @@ function HabitList() {
   }, [status, dispatch]);
 
   const handleAdd = () => {
-    dispatch(addHabit({ name: "New Habit", icon: "⭐" }));
+    if (status !== "loading") {
+      dispatch(addHabit({ name: "New Habit", icon: "⭐" }));
+    }
   };
 
   const handleUpdate = () => {
@@ -46,6 +48,10 @@ function HabitList() {
     dispatch(setCurrentHabit(habit));
   };
 
+  const handleErrorDismiss = () => {
+    dispatch(clearError());
+  };
+
   if (status === "loading") {
     return <div className="loading-spinner">Loading...</div>;
   }
@@ -54,8 +60,8 @@ function HabitList() {
     <div className="habits-container">
       {error && (
         <div className="error-message">
-          {error}
-          <button onClick={() => dispatch(clearError())}>Dismiss</button>
+          <span>{error}</span>
+          <button onClick={handleErrorDismiss}>Dismiss</button>
         </div>
       )}
 
@@ -101,23 +107,27 @@ function HabitList() {
         </div>
       )}
 
-      <ul className="habits-list">
-        {habits.map((habit) => (
-          <li key={habit.id} className="habit-item">
-            {/* Left side: Icon + Name */}
-            <div className="habit-info">
-              <span className="habit-icon">{habit.icon}</span>
-              <span className="habit-name">{habit.name}</span>
-            </div>
+      {habits.length === 0 ? (
+        <div>No habits available. Add some!</div>
+      ) : (
+        <ul className="habits-list">
+          {habits.map((habit) => (
+            <li key={habit.id} className="habit-item">
+              {/* Left side: Icon + Name */}
+              <div className="habit-info">
+                <span className="habit-icon">{habit.icon}</span>
+                <span className="habit-name">{habit.name}</span>
+              </div>
 
-            {/* Right side: Edit & Delete buttons */}
-            <div className="habit-actions">
-              <button onClick={() => handleEditClick(habit)}>Edit</button>
-              <button onClick={() => handleDelete(habit.id)}>Delete</button>
-            </div>
-          </li>
-        ))}
-      </ul>
+              {/* Right side: Edit & Delete buttons */}
+              <div className="habit-actions">
+                <button onClick={() => handleEditClick(habit)}>Edit</button>
+                <button onClick={() => handleDelete(habit.id)}>Delete</button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
