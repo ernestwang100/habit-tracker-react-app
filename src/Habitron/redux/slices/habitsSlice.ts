@@ -53,15 +53,13 @@ export const fetchHabits = createAsyncThunk(
 export const addHabit = createAsyncThunk(
   "habits/addHabit",
   async (newHabit: Omit<Habit, "id">, { getState, dispatch, rejectWithValue }) => {
-    const state = getState() as { auth: AuthState };
+    const state = getState() as { auth: AuthState, habitLogs: { habitLogs: DateEntry[] } };
     const userId = state.auth.user?.id;
     try {
       // Create new habit
       const response = await axios.post(`${HABITS_URL}?userId=${userId}`, newHabit);
       const habit: Habit = response.data;
 
-      // Get current habit logs from Redux
-      const state = getState() as RootState;
       console.log("🔍 Current Redux State:", state); // Debugging step
 
       // Ensure `habitLogs` exists and has data
