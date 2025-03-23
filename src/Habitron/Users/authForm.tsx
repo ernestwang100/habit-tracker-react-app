@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { signupUser, loginUser } from "../redux/slices/authSlice";
 import { RootState } from "../redux/store";
 import { useNavigate } from "react-router-dom";
-import "./AuthForm.css"; // Assuming you have a CSS file for styling
+import "./authForm.css"; // Assuming you have a CSS file for styling
 
 const AuthForm: React.FC<{ isSignup: boolean }> = ({ isSignup }) => {
   const [email, setEmail] = useState("");
