@@ -4,7 +4,7 @@ import { Provider } from "react-redux";
 import { store } from "./redux/store";
 import AuthRoutes from "./routes/authRoutes";
 import ProtectedRoute from "./routes/protectedRoute";
-import ItineraryPage from "../pages/ItineraryPage";
+import ItineraryPage from "./pages/ItineraryPage";
 
 function Habitron() {
   return (

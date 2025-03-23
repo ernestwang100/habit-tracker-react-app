@@ -1,7 +1,6 @@
 // src/redux/slices/itinerarySlice.ts
-import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
-import { RootState } from "../store";
 import { AuthState } from "./authSlice";
 
 // Define the structure of an itinerary item

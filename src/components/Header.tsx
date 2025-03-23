@@ -1,4 +1,3 @@
-import React from "react";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom"; // Updated import for React Router v6
 import { logout } from "../Habitron/redux/slices/authSlice"; // Import the logout action

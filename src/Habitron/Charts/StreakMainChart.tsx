@@ -1,4 +1,3 @@
-import React from "react";
 import {
   LineChart,
   Line,
@@ -18,7 +17,7 @@ interface StreakMainChartProps {
 }
 function StreakMainChart({ habitLogs }: StreakMainChartProps) {
   // Transform habitLogs into chart-compatible data
-  const data = habitLogs.map((log, index) => ({
+  const data = habitLogs.map((log) => ({
     name: log.date, // Use the date as the label
     value: log.streakDays, // Use streakDays for the Y-axis
   }));

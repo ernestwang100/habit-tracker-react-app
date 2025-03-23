@@ -1,10 +1,9 @@
 // HabitList.tsx
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState, AppDispatch } from "../redux/store";
 import {
   Habit,
-  HabitsState,
   fetchHabits,
   addHabit,
   updateHabit,
@@ -67,11 +66,7 @@ function HabitList() {
 
       <div className="habits-header">
         <h2>My Habits</h2>
-        <button
-          className="add-button"
-          onClick={handleAdd}
-          disabled={status === "loading"}
-        >
+        <button className="add-button" onClick={handleAdd}>
           Add Habit
         </button>
       </div>

@@ -1,6 +1,6 @@
 // src/pages/Dashboard.tsx
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../redux/store";
 import { fetchHabitLogs } from "../redux/slices/habitLogsSlice";
@@ -13,7 +13,6 @@ import ScheduleTable from "../Schedule";
 import ColorPicker from "../Charts/ColorPicker";
 import { Plus } from "lucide-react";
 import Header from "../../components/Header"; // Import the Header component
-import ItinerarySelect from "../Schedule/ItinerarySelect";
 
 function Dashboard() {
   const [activeTab, setActiveTab] = useState("This week");
@@ -48,7 +47,6 @@ function Dashboard() {
                 <HabitList />
 
                 {/* itinerary */}
-                <ItinerarySelect></ItinerarySelect>
                 <ScheduleTable />
                 {/* New Page Button */}
                 <div className="flex items-center justify-center">

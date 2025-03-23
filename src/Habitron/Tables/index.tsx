@@ -1,9 +1,9 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch } from "../redux/store";
 import * as habitLogsSlice from "../redux/slices/habitLogsSlice";
 import { RootState } from "../redux/store";
-import { Pen, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 
 export const useAppDispatch = () => useDispatch<AppDispatch>();
 
