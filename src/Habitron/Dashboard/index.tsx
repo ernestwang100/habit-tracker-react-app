@@ -47,14 +47,14 @@ function Dashboard() {
                 <HabitList />
 
                 {/* itinerary */}
-                <ScheduleTable />
+                {/* <ScheduleTable /> */}
                 {/* New Page Button */}
-                <div className="flex items-center justify-center">
+                {/* <div className="flex items-center justify-center">
                   <button className="flex items-center gap-2 text-gray-400 hover:text-gray-600">
                     <Plus size={20} />
                     <span>New page</span>
                   </button>
-                </div>
+                </div> */}
               </div>
             </div>
 
