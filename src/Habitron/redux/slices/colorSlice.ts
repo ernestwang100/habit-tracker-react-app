@@ -19,25 +19,44 @@ const initialState: ColorState = {
   error: null,
 };
 
-// Fetch colors from API
-export const fetchColors = createAsyncThunk("colors/fetchColors", async (_, { rejectWithValue }) => {
-  try {
-    const response = await axios.get(COLORS_URL);
-    return response.data; // Expected to be an array of colors
-  } catch (error: any) {
-    return rejectWithValue(error.response?.data || "Failed to fetch colors");
+// Fetch colors for a specific user
+export const fetchColors = createAsyncThunk(
+  "colors/fetchColors",
+  async (id: string, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(`${COLORS_URL}?id=${id}`);
+      return response.data.colors || [];
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || "Failed to fetch colors");
+    }
   }
-});
+);
 
-// Update colors in API
-export const updateColors = createAsyncThunk("colors/updateColors", async (colors: string[], { rejectWithValue }) => {
-  try {
-    await axios.put(COLORS_URL, { colors });
-    return colors;
-  } catch (error: any) {
-    return rejectWithValue(error.response?.data || "Failed to update colors");
+// Update colors for a specific user
+export const updateColors = createAsyncThunk(
+  "colors/updateColors",
+  async ({ id, colors }: { id: string; colors: string[] }, { rejectWithValue }) => {
+    try {
+      await axios.put(`${COLORS_URL}/${id}`, { colors });
+      return colors;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || "Failed to update colors");
+    }
   }
-});
+);
+
+// Delete colors for a specific user
+export const deleteColors = createAsyncThunk(
+  "colors/deleteColors",
+  async (id: string, { rejectWithValue }) => {
+    try {
+      await axios.delete(`${COLORS_URL}/${id}`);
+      return [];
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || "Failed to delete colors");
+    }
+  }
+);
 
 // Create slice
 const colorSlice = createSlice({
@@ -59,6 +78,9 @@ const colorSlice = createSlice({
       })
       .addCase(updateColors.fulfilled, (state, action: PayloadAction<string[]>) => {
         state.colors = action.payload;
+      })
+      .addCase(deleteColors.fulfilled, (state) => {
+        state.colors = [];
       });
   },
 });
