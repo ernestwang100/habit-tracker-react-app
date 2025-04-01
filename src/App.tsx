@@ -9,7 +9,8 @@ function App() {
     <HashRouter>
       <div>
         <Routes>
-          <Route path="/" element={<LandingPage />} />
+          <Route path="/" element={<Navigate to="/Habitron" />} />
+          {/* <Route path="/" element={<LandingPage />} /> */}
           <Route path="/Habitron/*" element={<Habitron />} />
         </Routes>
       </div>

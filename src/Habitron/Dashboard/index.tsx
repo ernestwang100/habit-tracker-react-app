@@ -45,7 +45,7 @@ function Dashboard() {
               <h2 className="text-xl font-semibold mb-4">Habits</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <HabitList />
-
+                <HabitTrackerTable />
                 {/* itinerary */}
                 {/* <ScheduleTable /> */}
                 {/* New Page Button */}
