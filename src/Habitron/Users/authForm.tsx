@@ -22,13 +22,10 @@ const AuthForm: React.FC<{ isSignup: boolean }> = ({ isSignup }) => {
     }
   };
 
-  const basePath =
-    window.location.hash.split("#")[1]?.split("/").slice(0, -1).join("/") || "";
-
   // Navigate when auth succeeds
   useEffect(() => {
     if (status === "succeeded") {
-      navigate(`${basePath}/dashboard`);
+      navigate(`/dashboard`);
     }
   }, [status, navigate]);
 
@@ -68,9 +65,7 @@ const AuthForm: React.FC<{ isSignup: boolean }> = ({ isSignup }) => {
       <p className="auth-toggle">
         {isSignup ? "Already have an account? " : "Don't have an account? "}
         <button
-          onClick={() =>
-            navigate(`${basePath}/${isSignup ? "login" : "signup"}`)
-          }
+          onClick={() => navigate(`/${isSignup ? "login" : "signup"}`)}
           className="toggle-button"
         >
           {isSignup ? "Log In" : "Sign Up"}
